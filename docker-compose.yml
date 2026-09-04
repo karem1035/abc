@@ -15,5 +15,31 @@ services:
       timeout: 3s
       retries: 10
 
+  rustfs:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ROOT_USER:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_ROOT_PASSWORD:-rustfsadmin}
+      RUSTFS_CONSOLE: "false"
+    ports:
+      - "9000:9000"
+    volumes:
+      - rustfsdata:/data
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - rustfs
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        sleep 3;
+        until mc alias set local http://rustfs:9000 ${RUSTFS_ROOT_USER:-rustfsadmin} ${RUSTFS_ROOT_PASSWORD:-rustfsadmin} --api S3v4; do sleep 2; done;
+        mc mb --ignore-existing local/${RUSTFS_BUCKET:-abc-public};
+        mc anonymous set download local/${RUSTFS_BUCKET:-abc-public};
+        exit 0;
+
 volumes:
   pgdata:
+  rustfsdata:

@@ -21,7 +21,7 @@ export function ProfilePage() {
       const body: Record<string, unknown> = { name, email: email || null, phone: phone || null }
       if (password) body.password = password
       const res = await authFetch('/profile/me', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })

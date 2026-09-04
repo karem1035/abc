@@ -6,6 +6,7 @@ import auth from './auth/routes'
 import users from './users/routes'
 import profile from './profile/routes'
 import audit from './audit/routes'
+import storage from './storage/routes'
 
 export const app = new OpenAPIHono()
 
@@ -20,13 +21,17 @@ app.route('/auth', auth)
 app.route('/users', users)
 app.route('/profile', profile)
 app.route('/audit-logs', audit)
+app.route('/storage', storage)
 
 export const openApiDocument = {
   openapi: '3.1.0',
   info: {
     title: 'ABC Website API',
     version: '1.0.0',
-    description: 'Backend API for the abc-website-v2 monorepo',
+    description:
+      'Backend API for the abc-website-v2 monorepo.\n\n' +
+      'Seeded users: `admin` / `0000` (admin), `call_center` / `0000`, `marketer` / `0000`.\n' +
+      'Login via `POST /auth/login`, then click **Authorize** and paste the `accessToken` (it persists across reloads).',
   },
 }
 
@@ -43,5 +48,5 @@ export function mountDocs(root: Hono) {
 
     return c.json(app.getOpenAPI31Document(document))
   })
-  root.use('/swagger', swaggerUI({ url: '/doc' }))
+  root.use('/swagger', swaggerUI({ url: '/doc', persistAuthorization: true }))
 }

@@ -123,10 +123,10 @@ usersRouter.openapi(getRoute, async (c) => {
 })
 
 const updateRoute = createRoute({
-  method: 'put',
+  method: 'patch',
   path: '/{id}',
   tags: ['users'],
-  summary: 'Update a user (admin only)',
+  summary: 'Update a user (admin only, partial)',
   security: [{ Bearer: [] }],
   request: {
     params: idParamSchema,

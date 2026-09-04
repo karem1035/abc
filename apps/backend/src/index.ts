@@ -59,4 +59,11 @@ root.onError((err, c) => {
 export default {
   port: env.PORT,
   fetch: root.fetch,
+  reusePort: true,
 }
+
+const displayPort = Number(process.env.PORT_DISPLAY ?? env.PORT)
+console.log(`\n  API:       http://localhost:${displayPort}/v1`)
+console.log(`  Health:    http://localhost:${displayPort}/v1/health`)
+console.log(`  Swagger:   http://localhost:${displayPort}/swagger`)
+console.log(`  OpenAPI:   http://localhost:${displayPort}/doc\n`)

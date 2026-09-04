@@ -57,8 +57,8 @@ All routes are under `/v1` (OpenAPI docs at `/doc`):
 - `POST /v1/auth/login` — username + password → JWT access token
 - `GET /v1/auth/me` — current user
 - `POST /v1/auth/logout` — audited logout (stateless JWT)
-- `GET|PUT /v1/profile/me` — own profile
-- `GET|POST /v1/users`, `GET|PUT|DELETE /v1/users/:id` — admin-only user management
+- `GET|PATCH /v1/profile/me` — own profile
+- `GET|POST /v1/users`, `GET|PATCH|DELETE /v1/users/:id` — admin-only user management
 - `GET /v1/audit-logs` — admin-only, paginated audit trail
 
 Auth mutations (login/logout), user management, and profile changes are recorded in the `audit_logs` table.

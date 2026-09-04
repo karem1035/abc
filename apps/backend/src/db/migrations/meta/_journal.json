@@ -8,6 +8,13 @@
       "when": 1788565567156,
       "tag": "0000_classy_albert_cleary",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788566055754,
+      "tag": "0001_pink_winter_soldier",
+      "breakpoints": true
     }
   ]
 }

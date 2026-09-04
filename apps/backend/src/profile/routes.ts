@@ -43,10 +43,10 @@ profile.openapi(meRoute, async (c) => {
 })
 
 const updateRoute = createRoute({
-  method: 'put',
+  method: 'patch',
   path: '/me',
   tags: ['profile'],
-  summary: 'Update own profile (name, contact info, password)',
+  summary: 'Update own profile (partial: name, contact info, password)',
   security: [{ Bearer: [] }],
   request: {
     body: { content: { 'application/json': { schema: updateProfileRequestSchema } } },
