@@ -3,6 +3,7 @@ import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 import { secureHeaders } from 'hono/secure-headers'
 import { prettyJSON } from 'hono/pretty-json'
+import { compress } from 'hono/compress'
 import { requestId } from 'hono/request-id'
 import { rateLimiter } from 'hono-rate-limiter'
 
@@ -19,6 +20,7 @@ const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
 root.use(requestId())
 root.use(logger())
 root.use('*', prettyJSON())
+root.use('*', compress())
 root.use(
   '/v1/*',
   cors({
