@@ -1,0 +1,22 @@
+{
+  "name": "abc-website-v2",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "bun --filter backend dev",
+    "dev:website": "bun --filter website dev",
+    "dev:dashboard": "bun --filter dashboard dev",
+    "dev": "bun --parallel dev:backend dev:website dev:dashboard",
+    "build": "bun --filter website --filter dashboard build",
+    "start": "bun --filter backend start",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "db:generate": "bun --filter backend db:generate",
+    "db:migrate": "bun --filter backend db:migrate",
+    "db:seed": "bun --filter backend seed"
+  }
+}
