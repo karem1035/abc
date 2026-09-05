@@ -219,7 +219,7 @@ function UserDialog({
             <Label htmlFor="user-role">{t('users.role')}</Label>
             <Select value={form.role} onValueChange={(v) => set('role', v as Role)}>
               <SelectTrigger id="user-role" className="w-full">
-                <SelectValue />
+                <SelectValue>{form.role ? tLabel(`roles.${form.role}`) : ''}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {ROLES.map((role) => (

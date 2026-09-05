@@ -1,6 +1,5 @@
 import { Fragment, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import type { DateRange } from 'react-day-picker'
 import {
   ChevronDown,
   Download,
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Select,
@@ -38,7 +38,7 @@ import {
   DEFAULT_PAGE_SIZE,
   TablePagination,
 } from '@/components/shared/table-pagination'
-import { DateRangePicker } from '@/components/shared/date-range-picker'
+import { DateField } from '@/components/shared/date-range-picker'
 import { cn } from '@/lib/utils'
 
 type AuditLog = {
@@ -88,11 +88,11 @@ const actionStyle: Record<string, { icon: React.ComponentType<{ className?: stri
 
 const defaultActionStyle = { icon: ShieldCheck, tone: 'outline' as const }
 
-function buildQuery(page: number, limit: number, action: string, range: DateRange | undefined) {
+function buildQuery(page: number, limit: number, action: string, from: Date | undefined, to: Date | undefined) {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) })
   if (action && action !== 'all') params.set('action', action)
-  if (range?.from) params.set('from', new Date(range.from.setHours(0, 0, 0, 0)).toISOString())
-  if (range?.to) params.set('to', new Date(range.to.setHours(23, 59, 59, 999)).toISOString())
+  if (from) params.set('from', new Date(new Date(from).setHours(0, 0, 0, 0)).toISOString())
+  if (to) params.set('to', new Date(new Date(to).setHours(23, 59, 59, 999)).toISOString())
   return params.toString()
 }
 
@@ -119,11 +119,12 @@ export function AuditLogsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [action, setAction] = useState<string>('all')
-  const [range, setRange] = useState<DateRange | undefined>(undefined)
+  const [from, setFrom] = useState<Date | undefined>(undefined)
+  const [to, setTo] = useState<Date | undefined>(undefined)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
 
-  const query = buildQuery(page, pageSize, action, range)
+  const query = buildQuery(page, pageSize, action, from, to)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['audit-logs', query],
@@ -131,7 +132,7 @@ export function AuditLogsPage() {
     placeholderData: keepPreviousData,
   })
 
-  const hasFilters = action !== 'all' || Boolean(range?.from)
+  const hasFilters = action !== 'all' || Boolean(from) || Boolean(to)
 
   async function exportCsv() {
     setExporting(true)
@@ -140,7 +141,7 @@ export function AuditLogsPage() {
       const all: AuditLog[] = []
       let p = 1
       while (all.length < 1000) {
-        const res = await api<AuditLogsResponse>(`/audit-logs?${buildQuery(p, 100, action, range)}`)
+        const res = await api<AuditLogsResponse>(`/audit-logs?${buildQuery(p, 100, action, from, to)}`)
         all.push(...res.data)
         if (all.length >= res.total || res.data.length === 0) break
         p += 1
@@ -168,30 +169,50 @@ export function AuditLogsPage() {
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={action}
-          onValueChange={(v) => {
-            setAction(String(v))
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="audit-action" className="text-xs text-muted-foreground">
+            {t('audit.type')}
+          </Label>
+          <Select
+            value={action}
+            onValueChange={(v) => {
+              setAction(String(v))
+              setPage(1)
+            }}
+          >
+            <SelectTrigger id="audit-action" size="sm" className="h-9 w-48">
+              <SelectValue>
+                {action === 'all' ? t('audit.allActions') : tLabel(`audit.actions.${action}`)}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" label={t('audit.allActions')}>
+                {t('audit.allActions')}
+              </SelectItem>
+              {ACTION_TYPES.map((a) => (
+                <SelectItem key={a} value={a} label={tLabel(`audit.actions.${a}`)}>
+                  {tLabel(`audit.actions.${a}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <DateField
+          id="audit-from"
+          label={t('audit.from')}
+          date={from}
+          onChange={(d) => {
+            setFrom(d)
             setPage(1)
           }}
-        >
-          <SelectTrigger size="sm" className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('audit.allActions')}</SelectItem>
-            {ACTION_TYPES.map((a) => (
-              <SelectItem key={a} value={a} label={tLabel(`audit.actions.${a}`)}>
-                {tLabel(`audit.actions.${a}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <DateRangePicker
-          range={range}
-          onChange={(next) => {
-            setRange(next)
+        />
+        <DateField
+          id="audit-to"
+          label={t('audit.to')}
+          date={to}
+          onChange={(d) => {
+            setTo(d)
             setPage(1)
           }}
         />
@@ -199,9 +220,11 @@ export function AuditLogsPage() {
           <Button
             variant="ghost"
             size="sm"
+            className="h-9"
             onClick={() => {
               setAction('all')
-              setRange(undefined)
+              setFrom(undefined)
+              setTo(undefined)
               setPage(1)
             }}
           >

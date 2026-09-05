@@ -72,7 +72,12 @@ export function PhoneInput({ id, value, onChange, invalid }: PhoneInputProps) {
         }}
       >
         <SelectTrigger className="w-32 shrink-0" aria-label="Country code">
-          <SelectValue />
+          <SelectValue>
+            {(() => {
+              const c = COUNTRIES.find((x) => x.code === country)
+              return c ? `${c.flag} ${c.dial}` : ''
+            })()}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {COUNTRIES.map((c) => (
