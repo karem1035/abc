@@ -76,7 +76,7 @@ export function PhoneInput({ id, value, onChange, invalid }: PhoneInputProps) {
         </SelectTrigger>
         <SelectContent>
           {COUNTRIES.map((c) => (
-            <SelectItem key={c.code} value={c.code}>
+            <SelectItem key={c.code} value={c.code} label={`${c.flag} ${c.dial}`}>
               <span className="flex items-center gap-2">
                 <span>{c.flag}</span>
                 <span className="font-mono text-xs">{c.dial}</span>

@@ -1,3 +1,5 @@
+import type { Context } from 'hono'
+import { getConnInfo } from 'hono/bun'
 import { db } from '../db/client'
 import { auditLogs } from '../db/schema'
 import type { NewAuditLog } from '../db/schema'
@@ -10,6 +12,17 @@ type AuditInput = {
   entityId?: string | null
   metadata?: Record<string, unknown>
   ip?: string | null
+}
+
+/** Best-effort client IP: proxy headers first, then the socket address. */
+export function clientIp(c: Context): string | null {
+  const forwarded = c.req.header('x-forwarded-for')?.split(',')[0]?.trim()
+  if (forwarded) return forwarded
+  try {
+    return getConnInfo(c).remote.address ?? null
+  } catch {
+    return null
+  }
 }
 
 /**

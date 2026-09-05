@@ -4,7 +4,7 @@ import { db } from '../db/client'
 import { users } from '../db/schema'
 import { signAccessToken } from '../lib/jwt'
 import { toUserResponse } from '../lib/user'
-import { recordAudit } from '../lib/audit'
+import { recordAudit, clientIp } from '../lib/audit'
 import { authGuard } from './middleware'
 import { loginRequestSchema, loginResponseSchema, userResponseSchema } from './dto'
 import type { UserRole } from '../env'
@@ -54,7 +54,7 @@ auth.openapi(loginRoute, async (c) => {
     action: 'auth.login',
     entity: 'auth',
     entityId: user.id,
-    ip: c.req.header('x-forwarded-for') ?? null,
+    ip: clientIp(c),
   })
   return c.json({
     accessToken,

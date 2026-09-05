@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { and, count, desc, eq, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, gte, lte, type SQL } from 'drizzle-orm'
 import { db } from '../db/client'
 import { auditLogs } from '../db/schema'
 import { authGuard, requireRole } from '../auth/middleware'
@@ -29,6 +29,8 @@ const listQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(10),
   entity: z.string().optional(),
   action: z.string().optional(),
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
 })
 
 const listRoute = createRoute({
@@ -56,11 +58,13 @@ const listRoute = createRoute({
 })
 
 audit.openapi(listRoute, async (c) => {
-  const { page, limit, entity, action } = c.req.valid('query')
+  const { page, limit, entity, action, from, to } = c.req.valid('query')
 
   const filters: SQL[] = []
   if (entity) filters.push(eq(auditLogs.entity, entity))
   if (action) filters.push(eq(auditLogs.action, action))
+  if (from) filters.push(gte(auditLogs.createdAt, new Date(from)))
+  if (to) filters.push(lte(auditLogs.createdAt, new Date(to)))
   const where = filters.length > 0 ? and(...filters) : undefined
 
   const [{ value: total }] = await db

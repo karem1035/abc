@@ -223,7 +223,7 @@ function UserDialog({
               </SelectTrigger>
               <SelectContent>
                 {ROLES.map((role) => (
-                  <SelectItem key={role} value={role}>
+                  <SelectItem key={role} value={role} label={tLabel(`roles.${role}`)}>
                     {tLabel(`roles.${role}`)}
                   </SelectItem>
                 ))}
