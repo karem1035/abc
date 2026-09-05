@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { ThemeProvider } from './lib/theme'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { DirectionProvider } from '@/components/ui/direction'
+import { ErrorBoundary } from '@/components/shared/error-boundary'
 import { I18nProvider, useI18n } from './lib/i18n'
 import './index.css'
 
@@ -28,18 +29,20 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <I18nProvider>
-          <Direction>
-            <BrowserRouter>
-              <TooltipProvider>
-                <App />
-              </TooltipProvider>
-            </BrowserRouter>
-          </Direction>
-        </I18nProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <I18nProvider>
+            <Direction>
+              <BrowserRouter>
+                <TooltipProvider>
+                  <App />
+                </TooltipProvider>
+              </BrowserRouter>
+            </Direction>
+          </I18nProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
