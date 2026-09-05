@@ -54,7 +54,7 @@ export function AppSidebar() {
           <img src="/abc-logo.webp" alt="ABC" className="h-11 w-11 rounded-md object-contain" />
         </Link>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="min-h-0">
         <ScrollArea className="h-full">
           <SidebarGroup>
             <SidebarGroupLabel>{t('app.name')}</SidebarGroupLabel>
