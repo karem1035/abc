@@ -1,8 +1,10 @@
 import { CalendarIcon, X } from 'lucide-react'
+import { ar as arLocale, enUS } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Label } from '@/components/ui/label'
+import { useI18n } from '@/lib/i18n'
 
 type DateFieldProps = {
   id: string
@@ -13,6 +15,7 @@ type DateFieldProps = {
 
 /** Single labeled date input: label above, popover calendar with year/month dropdowns. */
 export function DateField({ id, label, date, onChange }: DateFieldProps) {
+  const { locale, dir } = useI18n()
   const label_text =
     date ? date.toLocaleDateString('en-GB').replaceAll('/', '-') : undefined
 
@@ -55,7 +58,8 @@ export function DateField({ id, label, date, onChange }: DateFieldProps) {
             numberOfMonths={1}
             captionLayout="dropdown"
             defaultMonth={date}
-            dir="ltr"
+            dir={dir}
+            locale={locale === 'ar' ? arLocale : enUS}
           />
         </PopoverContent>
       </Popover>
