@@ -14,5 +14,10 @@ export const updateProfileRequestSchema = z.object({
   name: z.string().min(1).optional(),
   phone: z.string().nullable().optional(),
   email: z.string().email().nullable().optional(),
-  password: z.string().min(4).optional(),
+})
+
+export const changePasswordRequestSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(4),
+  confirmNewPassword: z.string().min(4),
 })

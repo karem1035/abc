@@ -16,6 +16,7 @@
     "drizzle-orm": "^0.38.3",
     "hono": "^4.13.2",
     "hono-rate-limiter": "^0.4.1",
+    "libphonenumber-js": "^1.13.12",
     "postgres": "^3.4.5",
     "sharp": "^0.33.5",
     "zod": "^3.24.1"

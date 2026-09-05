@@ -41,7 +41,7 @@ const navMain: NavItem[] = [
 
 export function AppSidebar() {
   const { user, logout } = useAuth()
-  const { t, dir } = useI18n()
+  const { t, tLabel, dir } = useI18n()
   const navigate = useNavigate()
 
   const visible = navMain.filter((item) => !item.roles || (user && item.roles.includes(user.role)))
@@ -88,7 +88,7 @@ export function AppSidebar() {
                   <DropdownMenuLabel className="flex flex-col gap-0.5">
                     <span>{user?.name}</span>
                     <span className="text-xs font-normal text-muted-foreground">
-                      {user?.username} · {user?.role}
+                      {user?.username} · {user ? tLabel(`roles.${user.role}`) : ''}
                     </span>
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>

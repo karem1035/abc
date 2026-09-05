@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { and, desc, eq, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, type SQL } from 'drizzle-orm'
 import { db } from '../db/client'
 import { auditLogs } from '../db/schema'
 import { authGuard, requireRole } from '../auth/middleware'
@@ -26,7 +26,7 @@ const auditLogSchema = z.object({
 
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
   entity: z.string().optional(),
   action: z.string().optional(),
 })
@@ -46,6 +46,7 @@ const listRoute = createRoute({
             data: z.array(auditLogSchema),
             page: z.number(),
             limit: z.number(),
+            total: z.number(),
           }),
         },
       },
@@ -60,11 +61,17 @@ audit.openapi(listRoute, async (c) => {
   const filters: SQL[] = []
   if (entity) filters.push(eq(auditLogs.entity, entity))
   if (action) filters.push(eq(auditLogs.action, action))
+  const where = filters.length > 0 ? and(...filters) : undefined
+
+  const [{ value: total }] = await db
+    .select({ value: count() })
+    .from(auditLogs)
+    .where(where)
 
   const rows = await db
     .select()
     .from(auditLogs)
-    .where(filters.length > 0 ? and(...filters) : undefined)
+    .where(where)
     .orderBy(desc(auditLogs.createdAt))
     .limit(limit)
     .offset((page - 1) * limit)
@@ -83,6 +90,7 @@ audit.openapi(listRoute, async (c) => {
     })),
     page,
     limit,
+    total: Number(total),
   })
 })
 

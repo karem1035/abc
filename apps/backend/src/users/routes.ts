@@ -1,16 +1,16 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { desc, eq } from 'drizzle-orm'
+import { count, desc, eq } from 'drizzle-orm'
 import { db } from '../db/client'
 import { users } from '../db/schema'
 import { toUserResponse } from '../lib/user'
 import { recordAudit } from '../lib/audit'
 import { authGuard, requireRole } from '../auth/middleware'
+import { normalizePhone, normalizeOptionalPhone } from '../lib/phone'
 import {
   createUserRequestSchema,
   idParamSchema,
   updateUserRequestSchema,
   userResponseSchema,
-  usersListResponseSchema,
 } from './dto'
 
 type AuthEnv = { Variables: { user: { id: string; username: string; role: 'admin' | 'call_center' | 'marketer' } } }
@@ -24,20 +24,49 @@ const listRoute = createRoute({
   method: 'get',
   path: '/',
   tags: ['users'],
-  summary: 'List users (admin only)',
+  summary: 'List users (admin only, paginated)',
   security: [{ Bearer: [] }],
+  request: {
+    query: z.object({
+      page: z.coerce.number().int().min(1).default(1),
+      limit: z.coerce.number().int().min(1).max(100).default(10),
+    }),
+  },
   responses: {
     200: {
-      content: { 'application/json': { schema: usersListResponseSchema } },
-      description: 'Users list',
+      content: {
+        'application/json': {
+          schema: z.object({
+            data: z.array(userResponseSchema),
+            page: z.number(),
+            limit: z.number(),
+            total: z.number(),
+          }),
+        },
+      },
+      description: 'Users page',
     },
     403: { description: 'Forbidden' },
   },
 })
 
 usersRouter.openapi(listRoute, async (c) => {
-  const rows = await db.select().from(users).orderBy(desc(users.createdAt))
-  return c.json({ data: rows.map(toUserResponse) })
+  const { page, limit } = c.req.valid('query')
+
+  const [{ value: total }] = await db.select({ value: count() }).from(users)
+  const rows = await db
+    .select()
+    .from(users)
+    .orderBy(desc(users.createdAt))
+    .limit(limit)
+    .offset((page - 1) * limit)
+
+  return c.json({
+    data: rows.map(toUserResponse),
+    page,
+    limit,
+    total: Number(total),
+  })
 })
 
 const createRouteDef = createRoute({
@@ -71,6 +100,10 @@ usersRouter.openapi(createRouteDef, async (c) => {
   if (existing) return c.json({ error: 'username already taken' }, 409)
 
   const passwordHash = await Bun.password.hash(body.password)
+  const phone = body.phone ? normalizePhone(body.phone) : null
+  if (body.phone && !phone) {
+    return c.json({ error: 'invalid phone number' }, 400)
+  }
   const [row] = await db
     .insert(users)
     .values({
@@ -78,7 +111,7 @@ usersRouter.openapi(createRouteDef, async (c) => {
       username: body.username,
       passwordHash,
       role: body.role,
-      phone: body.phone ?? null,
+      phone,
       email: body.email ?? null,
     })
     .returning()
@@ -157,6 +190,16 @@ usersRouter.openapi(updateRoute, async (c) => {
   const { password, ...rest } = body
   const updates: Record<string, unknown> = { ...rest, updatedAt: new Date() }
   if (password) updates.passwordHash = await Bun.password.hash(password)
+  if (body.phone !== undefined) {
+    const phone = normalizeOptionalPhone(body.phone)
+    if (body.phone && !phone) {
+      return c.json({ error: 'invalid phone number' }, 400)
+    }
+    updates.phone = phone
+  }
+  if (updates.isActive === false && id === actor.id) {
+    return c.json({ error: 'cannot deactivate yourself' }, 400)
+  }
 
   const [updated] = await db.update(users).set(updates).where(eq(users.id, id)).returning()
 
