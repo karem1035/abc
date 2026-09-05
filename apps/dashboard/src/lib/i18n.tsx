@@ -102,6 +102,8 @@ const dict = {
     'pagination.next': 'التالي',
     'phone.invalid': 'رقم هاتف غير صالح',
     'phone.label': 'الهاتف',
+    'phone.searchCountry': 'ابحث عن دولة…',
+    'phone.noCountry': 'لا توجد نتائج',
   },
   en: {
     'app.name': 'ABC Dashboard',
@@ -202,6 +204,8 @@ const dict = {
     'pagination.next': 'Next',
     'phone.invalid': 'Invalid phone number',
     'phone.label': 'Phone',
+    'phone.searchCountry': 'Search country…',
+    'phone.noCountry': 'No results',
   },
 } as const
 

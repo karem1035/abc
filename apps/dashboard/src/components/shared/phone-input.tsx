@@ -1,20 +1,9 @@
 import { useState } from 'react'
 import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  COUNTRIES,
-  DEFAULT_COUNTRY,
-  countryByDial,
-  exampleNumber,
-  normalizePhone,
-} from '@/lib/phone'
+import { exampleNumber, normalizePhone } from '@/lib/phone'
+import { CountrySelect } from '@/components/shared/country-select'
+import { DEFAULT_COUNTRY, findCountry } from '@/lib/countries'
 import { cn } from '@/lib/utils'
 
 type PhoneInputProps = {
@@ -26,30 +15,30 @@ type PhoneInputProps = {
 }
 
 /**
- * Country-code phone input: country select (Egypt default) + national number.
- * The value is always emitted in E.164. Common mistakes like "+20 01…"
- * are silently corrected while typing.
+ * Country-code phone input: searchable all-countries select (Egypt default)
+ * + national number. Always emits E.164. Common Egyptian mistakes like
+ * "+20 01…" are silently corrected while typing.
  */
 export function PhoneInput({ id, value, onChange, invalid }: PhoneInputProps) {
-  const initial = value
-    ? (() => {
-        try {
-          const parsed = parsePhoneNumberFromString(value)
-          if (parsed) {
-            return {
-              country: parsed.country ?? DEFAULT_COUNTRY,
-              national: parsed.formatNational().replace(/\D/g, ''),
-            }
-          }
-        } catch {
-          /* fall through */
-        }
-        const country = countryByDial(`+${value.replace(/\D/g, '').slice(0, 2)}`)
-        return { country: country.code, national: value.replace(/\D/g, '').replace(/^20/, '') }
-      })()
-    : { country: DEFAULT_COUNTRY, national: '' }
+  const initial = (() => {
+    try {
+      const parsed = parsePhoneNumberFromString(value)
+      if (parsed?.country) {
+        return { country: parsed.country, national: parsed.nationalNumber }
+      }
+    } catch {
+      /* fall through */
+    }
+    const raw = value.replace(/\D/g, '')
+    if (raw.startsWith('20')) {
+      return { country: DEFAULT_COUNTRY, national: raw.replace(/^20/, '') }
+    }
+    return { country: DEFAULT_COUNTRY, national: raw }
+  })()
 
-  const [country, setCountry] = useState<CountryCode>(initial.country as CountryCode)
+  const [country, setCountry] = useState<CountryCode>(
+    (findCountry(initial.country)?.code as CountryCode) ?? DEFAULT_COUNTRY,
+  )
   const [national, setNational] = useState(initial.national)
 
   function emit(nextCountry: CountryCode, nextNational: string) {
@@ -63,33 +52,13 @@ export function PhoneInput({ id, value, onChange, invalid }: PhoneInputProps) {
 
   return (
     <div className="flex gap-2" dir="ltr">
-      <Select
+      <CountrySelect
         value={country}
-        onValueChange={(next) => {
-          const code = String(next) as CountryCode
+        onChange={(code) => {
           setCountry(code)
           emit(code, national)
         }}
-      >
-        <SelectTrigger className="w-32 shrink-0" aria-label="Country code">
-          <SelectValue>
-            {(() => {
-              const c = COUNTRIES.find((x) => x.code === country)
-              return c ? `${c.flag} ${c.dial}` : ''
-            })()}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {COUNTRIES.map((c) => (
-            <SelectItem key={c.code} value={c.code} label={`${c.flag} ${c.dial}`}>
-              <span className="flex items-center gap-2">
-                <span>{c.flag}</span>
-                <span className="font-mono text-xs">{c.dial}</span>
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
       <Input
         id={id}
         inputMode="tel"

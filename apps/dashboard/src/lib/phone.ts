@@ -1,32 +1,8 @@
 import { parsePhoneNumberFromString, getExampleNumber, type CountryCode } from 'libphonenumber-js'
 import examples from 'libphonenumber-js/examples.mobile.json'
+import { DEFAULT_COUNTRY } from './countries'
 
-export type Country = {
-  code: string // ISO country code
-  dial: string // calling code
-  name: string
-  flag: string
-}
-
-/** Curated country list — Egypt first/default, rest by regional relevance. */
-export const COUNTRIES: Country[] = [
-  { code: 'EG', dial: '+20', name: 'مصر / Egypt', flag: '🇪🇬' },
-  { code: 'SA', dial: '+966', name: 'السعودية / Saudi Arabia', flag: '🇸🇦' },
-  { code: 'AE', dial: '+971', name: 'الإمارات / UAE', flag: '🇦🇪' },
-  { code: 'KW', dial: '+965', name: 'الكويت / Kuwait', flag: '🇰🇼' },
-  { code: 'QA', dial: '+974', name: 'قطر / Qatar', flag: '🇶🇦' },
-  { code: 'JO', dial: '+962', name: 'الأردن / Jordan', flag: '🇯🇴' },
-  { code: 'GB', dial: '+44', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'US', dial: '+1', name: 'United States', flag: '🇺🇸' },
-  { code: 'DE', dial: '+49', name: 'Germany', flag: '🇩🇪' },
-  { code: 'FR', dial: '+33', name: 'France', flag: '🇫🇷' },
-]
-
-export const DEFAULT_COUNTRY = 'EG'
-
-export function countryByDial(dial: string): Country {
-  return COUNTRIES.find((c) => c.dial === dial) ?? COUNTRIES[0]
-}
+export { DEFAULT_COUNTRY }
 
 /**
  * Normalize to E.164, fixing common Egyptian mistakes:
