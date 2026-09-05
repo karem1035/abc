@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,21 +55,23 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('app.name')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {visible.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton isActive={location.pathname === item.to} render={<Link to={item.to} />}>
-                    <item.icon className="h-4 w-4" />
-                    <span>{t(item.labelKey)}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <ScrollArea className="h-full">
+          <SidebarGroup>
+            <SidebarGroupLabel>{t('app.name')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visible.map((item) => (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton isActive={location.pathname === item.to} render={<Link to={item.to} />}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{t(item.labelKey)}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </ScrollArea>
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
