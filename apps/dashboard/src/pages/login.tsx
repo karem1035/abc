@@ -1,14 +1,30 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { LangSwitch } from '@/components/lang-switch'
 import { useAuth } from '@/lib/auth'
+import { useI18n } from '@/lib/i18n'
 
 export function LoginPage() {
   const { login } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -19,51 +35,64 @@ export function LoginPage() {
     if (result.ok) {
       navigate('/', { replace: true })
     } else {
-      setError(result.error)
+      setError(t('login.invalid'))
     }
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-neutral-50">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm"
-      >
-        <h1 className="text-lg font-semibold">ABC Dashboard</h1>
-        <div className="space-y-1">
-          <label htmlFor="username" className="text-sm font-medium">
-            Username
-          </label>
-          <input
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
-          />
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
-        >
-          {submitting ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+    <div className="relative flex min-h-svh items-center justify-center bg-background p-4">
+      <div className="absolute top-3 end-3 flex items-center gap-1">
+        <LangSwitch />
+        <ThemeToggle />
+      </div>
+      <Card className="w-full max-w-sm">
+        <CardHeader className="items-center text-center">
+          <img src="/abc-logo.webp" alt="ABC" className="mx-auto h-16 w-16 rounded-xl object-contain" />
+          <CardTitle className="font-[family-name:var(--font-heading)] text-xl">{t('login.title')}</CardTitle>
+          <CardDescription>{t('login.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">{t('login.username')}</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t('login.password')}</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  className="pe-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute inset-y-0 end-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting ? t('login.submitting') : t('login.submit')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

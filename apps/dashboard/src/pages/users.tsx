@@ -1,41 +1,67 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import type { AuthUser } from '@/lib/auth'
+import { useI18n } from '@/lib/i18n'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type UsersResponse = { data: AuthUser[] }
 
 export function UsersPage() {
+  const { t } = useI18n()
   const { data, isLoading, error } = useQuery({
     queryKey: ['users'],
     queryFn: () => api<UsersResponse>('/users'),
   })
 
-  if (isLoading) return <p className="text-sm text-neutral-500">Loading users…</p>
-  if (error) return <p className="text-sm text-red-600">{(error as Error).message}</p>
-
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Users</h1>
-      <table className="w-full overflow-hidden rounded-lg border border-neutral-200 bg-white text-sm">
-        <thead className="bg-neutral-100 text-left text-neutral-500">
-          <tr>
-            <th className="px-4 py-2 font-medium">Name</th>
-            <th className="px-4 py-2 font-medium">Username</th>
-            <th className="px-4 py-2 font-medium">Role</th>
-            <th className="px-4 py-2 font-medium">Active</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.data.map((u) => (
-            <tr key={u.id} className="border-t border-neutral-200">
-              <td className="px-4 py-2">{u.name}</td>
-              <td className="px-4 py-2">{u.username}</td>
-              <td className="px-4 py-2">{u.role}</td>
-              <td className="px-4 py-2">{u.isActive ? 'Yes' : 'No'}</td>
-            </tr>
+      <h1 className="font-[family-name:var(--font-heading)] text-xl font-semibold">{t('users.title')}</h1>
+      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
+      {isLoading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full" />
           ))}
-        </tbody>
-      </table>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('users.name')}</TableHead>
+                <TableHead>{t('users.username')}</TableHead>
+                <TableHead>{t('users.role')}</TableHead>
+                <TableHead>{t('users.active')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data?.data.map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell>{u.name}</TableCell>
+                  <TableCell>{u.username}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{u.role}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={u.isActive ? 'default' : 'secondary'}>
+                      {u.isActive ? t('users.active') : t('users.inactive')}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   )
 }

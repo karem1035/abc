@@ -1,9 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>ABC Dashboard</title>
+    <script>
+      (function () {
+        try {
+          // Theme before first paint (system default unless overridden)
+          var t = localStorage.getItem('abc.theme') || 'system';
+          var isDark =
+            t === 'dark' ||
+            (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', isDark);
+          // Locale: Arabic default, RTL
+          var loc = localStorage.getItem('abc.locale') || 'ar';
+          document.documentElement.lang = loc;
+          document.documentElement.dir = loc === 'ar' ? 'rtl' : 'ltr';
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
