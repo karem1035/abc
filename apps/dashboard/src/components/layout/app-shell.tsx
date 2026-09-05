@@ -17,16 +17,14 @@ export function AppShell() {
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
           <span className="font-[family-name:var(--font-heading)] font-semibold">{t('app.name')}</span>
-          <div className="ms-auto">
+          <div className="ms-auto flex items-center gap-1">
+            <LangSwitch />
             <ThemeToggle />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
-        <footer className="flex h-10 shrink-0 items-center justify-end border-t px-4">
-          <LangSwitch />
-        </footer>
       </SidebarInset>
     </SidebarProvider>
   )

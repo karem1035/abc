@@ -24,7 +24,6 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth, type UserRole } from '@/lib/auth'
 import { useI18n, type TranslationKey } from '@/lib/i18n'
-
 type NavItem = {
   to: string
   labelKey: TranslationKey
@@ -42,19 +41,16 @@ const navMain: NavItem[] = [
 
 export function AppSidebar() {
   const { user, logout } = useAuth()
-  const { t } = useI18n()
+  const { t, dir } = useI18n()
   const navigate = useNavigate()
 
   const visible = navMain.filter((item) => !item.roles || (user && item.roles.includes(user.role)))
 
   return (
-    <Sidebar>
+    <Sidebar side={dir === 'rtl' ? 'right' : 'left'}>
       <SidebarHeader>
-        <Link to="/" className="flex items-center gap-2 px-2 py-1.5">
-          <img src="/abc-logo.webp" alt="ABC" className="h-8 w-8 rounded-md object-contain" />
-          <span className="font-[family-name:var(--font-heading)] text-lg font-bold tracking-tight">
-            ABC
-          </span>
+        <Link to="/" className="flex items-center justify-center px-2 py-2">
+          <img src="/abc-logo.webp" alt="ABC" className="h-11 w-11 rounded-md object-contain" />
         </Link>
       </SidebarHeader>
       <SidebarContent>

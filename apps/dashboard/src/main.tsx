@@ -4,9 +4,15 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import { ThemeProvider } from './lib/theme'
-import { I18nProvider } from './lib/i18n'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { DirectionProvider } from '@/components/ui/direction'
+import { I18nProvider, useI18n } from './lib/i18n'
 import './index.css'
+
+function Direction({ children }: { children: React.ReactNode }) {
+  const { dir } = useI18n()
+  return <DirectionProvider direction={dir}>{children}</DirectionProvider>
+}
 
 // All server data is considered fresh for 5 minutes
 const queryClient = new QueryClient({
@@ -25,11 +31,13 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <I18nProvider>
-          <BrowserRouter>
-            <TooltipProvider>
-              <App />
-            </TooltipProvider>
-          </BrowserRouter>
+          <Direction>
+            <BrowserRouter>
+              <TooltipProvider>
+                <App />
+              </TooltipProvider>
+            </BrowserRouter>
+          </Direction>
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
