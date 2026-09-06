@@ -7,6 +7,7 @@ import users from './users/routes'
 import profile from './profile/routes'
 import audit from './audit/routes'
 import storage from './storage/routes'
+import contact from './contact/routes'
 
 export const app = new OpenAPIHono()
 
@@ -22,6 +23,7 @@ app.route('/users', users)
 app.route('/profile', profile)
 app.route('/audit-logs', audit)
 app.route('/storage', storage)
+app.route('/contact', contact)
 
 export const openApiDocument = {
   openapi: '3.1.0',

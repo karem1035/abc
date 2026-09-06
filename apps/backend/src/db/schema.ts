@@ -56,3 +56,42 @@ export const media = pgTable('media', {
 
 export type Media = typeof media.$inferSelect
 export type NewMedia = typeof media.$inferInsert
+
+export const contactSubmissions = pgTable(
+  'contact_submissions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    phone: text('phone').notNull(), // E.164
+    email: text('email'),
+    type: text('type'), // general | appointment | complaint | insurance | other
+    otherType: text('other_type'),
+    message: text('message').notNull(),
+    status: text('status').default('new').notNull(), // new | read | archived
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('contact_submissions_created_at_idx').on(table.createdAt)],
+)
+
+export type ContactSubmission = typeof contactSubmissions.$inferSelect
+export type NewContactSubmission = typeof contactSubmissions.$inferInsert
+
+export const faqs = pgTable(
+  'faqs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    page: text('page').notNull().default('contact'), // which public page it appears on
+    questionAr: text('question_ar').notNull(),
+    questionEn: text('question_en').notNull(),
+    answerAr: text('answer_ar').notNull(),
+    answerEn: text('answer_en').notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('faqs_page_idx').on(table.page)],
+)
+
+export type Faq = typeof faqs.$inferSelect
+export type NewFaq = typeof faqs.$inferInsert

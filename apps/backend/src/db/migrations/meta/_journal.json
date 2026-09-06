@@ -15,6 +15,13 @@
       "when": 1788566055754,
       "tag": "0001_pink_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788659276235,
+      "tag": "0002_workable_sersi",
+      "breakpoints": true
     }
   ]
 }
