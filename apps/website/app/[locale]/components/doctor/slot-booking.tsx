@@ -154,8 +154,8 @@ export function SlotBooking({
             <p className="font-bold">{ar ? 'تم استلام طلبك' : 'Request received'}</p>
             <p className="text-sm text-muted-foreground">
               {ar
-                ? `موعدك المبدئي: ${formatTime(slot)} — ${date}. سيتواصل معك فريقنا للتأكيد.`
-                : `Provisional appointment: ${date} at ${formatTime(slot)}. Our team will call to confirm.`}
+                ? `موعدك المبدئي: ${formatTime(slot, locale)} — ${date}. سيتواصل معك فريقنا للتأكيد.`
+                : `Provisional appointment: ${date} at ${formatTime(slot, locale)}. Our team will call to confirm.`}
             </p>
           </motion.div>
         ) : (
@@ -218,7 +218,7 @@ export function SlotBooking({
                     )}
                   >
                     <Clock className="size-3.5" />
-                    {formatTime(s)}
+                    {formatTime(s, locale)}
                   </button>
                 ))}
               </div>
@@ -231,7 +231,7 @@ export function SlotBooking({
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-3 overflow-hidden"
               >
-                <p className="rounded-lg bg-brand-soft p-3 font-bold" role="status">{new Date(`${date}T12:00:00`).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · <bdi>{formatTime(slot)}</bdi></p>
+                <p className="rounded-lg bg-brand-soft p-3 font-bold" role="status">{new Date(`${date}T12:00:00`).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · <bdi>{formatTime(slot, locale)}</bdi></p>
                 <h3 className="font-bold">{ar ? '٣. بيانات التواصل' : '3. Your details'}</h3>
                 <label htmlFor="booking-name" className="block text-sm">{ar ? 'الاسم بالكامل' : 'Full name'}</label>
                 <input

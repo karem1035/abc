@@ -113,7 +113,7 @@ export default async function DoctorPage({
                   <li key={i} className="flex items-center justify-between py-2.5 text-sm">
                     <span className="font-bold">{dayNames[s.weekday]}</span>
                     <span className="text-muted-foreground" dir="ltr">
-                      {formatTime(s.startTime)} — {formatTime(s.endTime)}
+                      {formatTime(s.startTime, locale)} — {formatTime(s.endTime, locale)}
                     </span>
                   </li>
                 ))}
