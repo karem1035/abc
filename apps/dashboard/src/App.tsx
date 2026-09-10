@@ -12,6 +12,7 @@ import { ContactSubmissionsPage } from '@/pages/contact-submissions'
 import { DepartmentEditPage } from '@/pages/department-edit'
 import { DepartmentsPage } from '@/pages/departments'
 import { DoctorsPage } from '@/pages/doctors'
+import { DoctorEditPage } from '@/pages/doctor-edit'
 import { useAuth, type UserRole } from '@/lib/auth'
 import { Loader2 } from 'lucide-react'
 
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="departments/new" element={<DepartmentEditPage />} />
         <Route path="departments/:id/edit" element={<DepartmentEditPage />} />
         <Route path="doctors" element={<DoctorsPage />} />
+        <Route path="doctors/:id" element={<DoctorEditPage />} />
         <Route path="contact-submissions" element={<ContactSubmissionsPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>

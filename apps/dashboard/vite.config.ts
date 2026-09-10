@@ -13,9 +13,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/v1': 'http://localhost:3000',
-      '/doc': 'http://localhost:3000',
-      '/swagger': 'http://localhost:3000',
+      // regex keys so '/doc' (API docs) doesn't swallow '/doctors' (SPA route)
+      '^/v1': 'http://localhost:3000',
+      '^/doc$': 'http://localhost:3000',
+      '^/doc/': 'http://localhost:3000',
+      '^/swagger$': 'http://localhost:3000',
+      '^/swagger/': 'http://localhost:3000',
     },
   },
 })
