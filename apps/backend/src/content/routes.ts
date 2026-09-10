@@ -31,6 +31,7 @@ const partnersListRoute = createRoute({
                 category: z.string(),
                 logoUrl: z.string().nullable(),
                 websiteUrl: z.string().nullable(),
+                content: z.string().nullable(),
               }),
             ),
           }),
@@ -58,6 +59,7 @@ contentRouter.openapi(partnersListRoute, async (c) => {
       category: p.category,
       logoUrl: p.logoUrl,
       websiteUrl: p.websiteUrl,
+      content: isAr ? p.contentAr : p.contentEn,
     })),
   })
 })
@@ -105,6 +107,8 @@ contentRouter.use('/admin/*', authGuard)
 const partnerSchema = z.object({
   nameAr: z.string().trim().min(2).max(120),
   nameEn: z.string().trim().min(2).max(120),
+  contentAr: z.string().optional(),
+  contentEn: z.string().optional(),
   category: z.enum(['insurance', 'company', 'authority']).default('insurance'),
   logoUrl: z.string().trim().url().optional().or(z.literal('')),
   websiteUrl: z.string().trim().url().optional().or(z.literal('')),

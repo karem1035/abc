@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
 import {
@@ -8,12 +9,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -21,10 +17,6 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
-import { ImageInput } from '@/components/shared/image-input'
 
 type Partner = {
   id: string
@@ -37,62 +29,17 @@ type Partner = {
   isActive: boolean
 }
 
-const CATEGORIES = ['insurance', 'company', 'authority'] as const
-
-type PartnerForm = {
-  nameAr: string
-  nameEn: string
-  category: string
-  logoUrl: string
-  websiteUrl: string
-  sortOrder: string
-  isActive: boolean
-}
-
-const emptyForm: PartnerForm = {
-  nameAr: '', nameEn: '', category: 'insurance', logoUrl: '', websiteUrl: '', sortOrder: '0', isActive: true,
-}
-
 export function PartnersPage() {
   const { t, dir } = useI18n()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<Partner | null>(null)
   const [deleting, setDeleting] = useState<Partner | null>(null)
-  const [form, setForm] = useState<PartnerForm>(emptyForm)
-  const [error, setError] = useState<string | null>(null)
 
   const listQuery = useQuery({
     queryKey: ['partners'],
     queryFn: () => api<{ data: Partner[] }>('/content/admin/partners'),
     placeholderData: keepPreviousData,
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        nameAr: form.nameAr,
-        nameEn: form.nameEn,
-        category: form.category,
-        logoUrl: form.logoUrl || undefined,
-        websiteUrl: form.websiteUrl || undefined,
-        sortOrder: Number(form.sortOrder) || 0,
-        isActive: form.isActive,
-      }
-      return editing
-        ? api<Partner>(`/content/admin/partners/${editing.id}`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-          })
-        : api<Partner>('/content/admin/partners', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-          })
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['partners'] })
-      setDialogOpen(false)
-    },
-    onError: (e: Error) => setError(e.message),
   })
 
   const deleteMutation = useMutation({
@@ -103,21 +50,6 @@ export function PartnersPage() {
     },
   })
 
-  function openCreate() {
-    setEditing(null); setForm(emptyForm); setError(null); setDialogOpen(true)
-  }
-  function openEdit(p: Partner) {
-    setEditing(p)
-    setForm({
-      nameAr: p.nameAr, nameEn: p.nameEn, category: p.category,
-      logoUrl: p.logoUrl ?? '', websiteUrl: p.websiteUrl ?? '',
-      sortOrder: String(p.sortOrder), isActive: p.isActive,
-    })
-    setError(null); setDialogOpen(true)
-  }
-  function onSubmit(e: FormEvent) {
-    e.preventDefault(); setError(null); saveMutation.mutate()
-  }
 
   const rows = listQuery.data?.data ?? []
   const categoryLabel: Record<string, string> = {
@@ -130,7 +62,7 @@ export function PartnersPage() {
     <div className="space-y-4 p-3 lg:p-4">
       <div className="flex items-center justify-between">
         <h1 className="font-serif text-xl font-bold sm:text-2xl">{t('partners.title')}</h1>
-        <Button onClick={openCreate}>
+        <Button onClick={() => navigate('/partners/new')}>
           <Plus className="h-4 w-4" />
           {t('partners.add')}
         </Button>
@@ -161,7 +93,7 @@ export function PartnersPage() {
               </TableRow>
             ) : (
               rows.map((p) => (
-                <TableRow key={p.id} className="cursor-pointer" onClick={() => openEdit(p)}>
+                <TableRow key={p.id} className="cursor-pointer" onClick={() => navigate(`/partners/${p.id}`)}>
                   <TableCell className="font-medium" dir="rtl">{p.nameAr}</TableCell>
                   <TableCell dir="ltr">{p.nameEn}</TableCell>
                   <TableCell><Badge variant="outline">{categoryLabel[p.category]}</Badge></TableCell>
@@ -177,7 +109,7 @@ export function PartnersPage() {
                         <Ellipsis className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align={dir === 'rtl' ? 'start' : 'end'}>
-                        <DropdownMenuItem onClick={() => openEdit(p)}>
+                        <DropdownMenuItem onClick={() => navigate(`/partners/${p.id}`)}>
                           <Pencil className="h-4 w-4" /> {t('partners.edit')}
                         </DropdownMenuItem>
                         <DropdownMenuItem variant="destructive" onClick={() => setDeleting(p)}>
@@ -192,66 +124,6 @@ export function PartnersPage() {
           </TableBody>
         </Table>
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editing ? t('partners.edit') : t('partners.add')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>{t('partners.nameAr')}</Label>
-                <Input dir="rtl" required value={form.nameAr} onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('partners.nameEn')}</Label>
-                <Input dir="ltr" required value={form.nameEn} onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('partners.category.label')}</Label>
-                <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v ?? 'insurance' }))}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{categoryLabel[cat]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('faqs.sortOrder')}</Label>
-                <Input type="number" value={form.sortOrder} onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))} />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>{t('partners.logo')}</Label>
-                <ImageInput value={form.logoUrl} onChange={(url) => setForm((f) => ({ ...f, logoUrl: url }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('partners.website')}</Label>
-                <Input dir="ltr" type="url" placeholder="https://…" value={form.websiteUrl} onChange={(e) => setForm((f) => ({ ...f, websiteUrl: e.target.value }))} />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                id="partner-active" type="checkbox" className="size-4 accent-primary"
-                checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
-              />
-              <Label htmlFor="partner-active">{t('faqs.active')}</Label>
-            </div>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-              <Button type="submit">{t('common.save')}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={!!deleting} onOpenChange={(v) => !v && setDeleting(null)}>
         <AlertDialogContent>

@@ -202,6 +202,8 @@ export const insurancePartners = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     nameAr: text('name_ar').notNull(),
     nameEn: text('name_en').notNull(),
+    contentAr: text('content_ar'), // rich HTML about the agreement (TipTap)
+    contentEn: text('content_en'),
     category: text('category').default('insurance').notNull(), // insurance | company | authority
     logoUrl: text('logo_url'),
     websiteUrl: text('website_url'),

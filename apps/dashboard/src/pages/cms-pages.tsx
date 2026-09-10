@@ -1,20 +1,15 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
-import { cn } from '@/lib/utils'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -22,7 +17,6 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { RichTextEditor } from '@/components/shared/richtext-editor'
 
 type CmsPage = {
   id: string
@@ -35,59 +29,17 @@ type CmsPage = {
   updatedAt: string
 }
 
-type PageForm = {
-  slug: string
-  titleAr: string
-  titleEn: string
-  contentAr: string
-  contentEn: string
-  isPublished: boolean
-}
-
-const emptyForm: PageForm = {
-  slug: '', titleAr: '', titleEn: '', contentAr: '', contentEn: '', isPublished: true,
-}
-
 export function CmsPagesPage() {
   const { t, dir } = useI18n()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<CmsPage | null>(null)
   const [deleting, setDeleting] = useState<CmsPage | null>(null)
-  const [tab, setTab] = useState<'ar' | 'en'>('ar')
-  const [form, setForm] = useState<PageForm>(emptyForm)
-  const [error, setError] = useState<string | null>(null)
 
   const listQuery = useQuery({
     queryKey: ['cms-pages'],
     queryFn: () => api<{ data: CmsPage[] }>('/content/admin/pages'),
     placeholderData: keepPreviousData,
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        slug: form.slug,
-        titleAr: form.titleAr,
-        titleEn: form.titleEn,
-        contentAr: form.contentAr || undefined,
-        contentEn: form.contentEn || undefined,
-        isPublished: form.isPublished,
-      }
-      return editing
-        ? api<CmsPage>(`/content/admin/pages/${editing.id}`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-          })
-        : api<CmsPage>('/content/admin/pages', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-          })
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['cms-pages'] })
-      setDialogOpen(false)
-    },
-    onError: (e: Error) => setError(e.message),
   })
 
   const deleteMutation = useMutation({
@@ -98,29 +50,14 @@ export function CmsPagesPage() {
     },
   })
 
-  function openCreate() {
-    setEditing(null); setForm(emptyForm); setTab('ar'); setError(null); setDialogOpen(true)
-  }
-  function openEdit(pg: CmsPage) {
-    setEditing(pg)
-    setForm({
-      slug: pg.slug, titleAr: pg.titleAr, titleEn: pg.titleEn,
-      contentAr: pg.contentAr ?? '', contentEn: pg.contentEn ?? '', isPublished: pg.isPublished,
-    })
-    setTab('ar'); setError(null); setDialogOpen(true)
-  }
-  function onSubmit(e: FormEvent) {
-    e.preventDefault(); setError(null); saveMutation.mutate()
-  }
 
   const rows = listQuery.data?.data ?? []
-  const ar = tab === 'ar'
 
   return (
     <div className="space-y-4 p-3 lg:p-4">
       <div className="flex items-center justify-between">
         <h1 className="font-serif text-xl font-bold sm:text-2xl">{t('pages.title')}</h1>
-        <Button onClick={openCreate}>
+        <Button onClick={() => navigate('/pages/new')}>
           <Plus className="h-4 w-4" />
           {t('pages.add')}
         </Button>
@@ -150,7 +87,7 @@ export function CmsPagesPage() {
               </TableRow>
             ) : (
               rows.map((pg) => (
-                <TableRow key={pg.id} className="cursor-pointer" onClick={() => openEdit(pg)}>
+                <TableRow key={pg.id} className="cursor-pointer" onClick={() => navigate(`/pages/${pg.id}`)}>
                   <TableCell className="text-muted-foreground" dir="ltr">{pg.slug}</TableCell>
                   <TableCell className="font-medium" dir="rtl">{pg.titleAr}</TableCell>
                   <TableCell dir="ltr">{pg.titleEn}</TableCell>
@@ -165,7 +102,7 @@ export function CmsPagesPage() {
                         <Ellipsis className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align={dir === 'rtl' ? 'start' : 'end'}>
-                        <DropdownMenuItem onClick={() => openEdit(pg)}>
+                        <DropdownMenuItem onClick={() => navigate(`/pages/${pg.id}`)}>
                           <Pencil className="h-4 w-4" /> {t('pages.edit')}
                         </DropdownMenuItem>
                         <DropdownMenuItem variant="destructive" onClick={() => setDeleting(pg)}>
@@ -180,66 +117,6 @@ export function CmsPagesPage() {
           </TableBody>
         </Table>
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{editing ? t('pages.edit') : t('pages.add')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label>Slug <span className="text-muted-foreground">(URL)</span></Label>
-                <Input dir="ltr" required pattern="[a-z0-9-]+" placeholder="privacy"
-                  value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('pages.titleAr')}</Label>
-                <Input dir="rtl" required value={form.titleAr} onChange={(e) => setForm((f) => ({ ...f, titleAr: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('pages.titleEn')}</Label>
-                <Input dir="ltr" required value={form.titleEn} onChange={(e) => setForm((f) => ({ ...f, titleEn: e.target.value }))} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>{t('departments.content')}</Label>
-                <div className="flex rounded-md border p-0.5">
-                  {(['ar', 'en'] as const).map((lng) => (
-                    <button key={lng} type="button" onClick={() => setTab(lng)}
-                      className={cn('rounded px-3 py-1 text-xs font-bold transition-colors',
-                        tab === lng ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>
-                      {lng === 'ar' ? 'العربية' : 'English'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <RichTextEditor
-                dir={ar ? 'rtl' : 'ltr'}
-                placeholder={ar ? t('departments.contentAr') : t('departments.contentEn')}
-                value={ar ? form.contentAr : form.contentEn}
-                onChange={(html) => setForm((f) => (ar ? { ...f, contentAr: html } : { ...f, contentEn: html }))}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                id="page-published" type="checkbox" className="size-4 accent-primary"
-                checked={form.isPublished} onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))}
-              />
-              <Label htmlFor="page-published">{t('pages.published')}</Label>
-            </div>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-              <Button type="submit">{t('common.save')}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={!!deleting} onOpenChange={(v) => !v && setDeleting(null)}>
         <AlertDialogContent>
