@@ -337,8 +337,9 @@ h1, h2, h3, h4, h5, h6 {
 .hospital-doctor-grid,.hospital-department-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; }
 .hospital-doctor-card { background:white; border:1px solid #e8dece; border-radius:5px; overflow:hidden; display:flex; flex-direction:column; transition:box-shadow .2s,border-color .2s; }
 .hospital-doctor-card:hover { border-color:#d4ae6e; box-shadow:0 12px 30px #8a6c3310; }
-.hospital-doctor-photo { position:relative; aspect-ratio:1; background:#f6ecdc; border-bottom:1px solid #e9dcc7; }
-.hospital-doctor-photo img { object-fit:cover; object-position:center top; }
+.hospital-doctor-photo { position:relative; aspect-ratio:1; background:#f6ecdc; border-bottom:1px solid #e9dcc7; overflow:hidden; }
+.hospital-doctor-photo img { object-fit:cover; object-position:center top; transition:transform .5s cubic-bezier(.2,.7,.3,1); }
+.hospital-doctor-card:hover .hospital-doctor-photo img { transform:scale(1.07); }
 .hospital-doctor-placeholder { height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px; background:linear-gradient(135deg,#fcf7ed,#ead2a6); color:#b18b4f; }
 .hospital-doctor-placeholder span { font-size:12px; letter-spacing:.15em; }
 .hospital-doctor-body { padding:24px; display:flex; flex-direction:column; flex:1; }
@@ -349,6 +350,17 @@ a.hospital-specialty:hover { text-decoration:underline; }
 .hospital-doctor-action { display:flex; align-items:center; gap:9px; border-top:1px solid #e9decb; padding-top:18px; margin-top:auto; font-size:14px; font-weight:600; min-height:54px; }
 .hospital-doctor-action span { margin-inline-start:auto; color:#8b6c36; }
 .hospital-doctor-body h3 + .hospital-doctor-action { margin-top:24px; }
+.hospital-doctor-link { display:flex; flex-direction:column; flex:1; color:inherit; text-decoration:none; }
+.hospital-doctor-link .hospital-doctor-body { flex:1; }
+.hospital-doctor-name { font-size:24px; line-height:1.4; font-weight:700; overflow-wrap:anywhere; display:block; }
+.hospital-doctor-footer { padding:0 24px 24px; display:flex; flex-direction:column; gap:14px; }
+.hospital-doctor-footer .hospital-specialty { margin-bottom:0; }
+.hospital-doctor-cta { display:flex; align-items:center; justify-content:center; gap:8px; border-radius:5px; background:#d4ae6e; color:#211a10; font-size:14px; font-weight:700; padding:12px 16px; text-decoration:none; transition:background .2s,transform .15s; }
+.hospital-doctor-cta:hover { background:#c29d59; transform:translateY(-1px); }
+.hospital-doctor-cta-arrow { margin-inline-start:auto; transition:transform .2s; }
+.hospital-doctor-cta:hover .hospital-doctor-cta-arrow { transform:translate(2px,-2px); }
+[dir='rtl'] .hospital-doctor-cta:hover .hospital-doctor-cta-arrow { transform:translate(-2px,-2px); }
+@media(max-width:540px) { .hospital-doctor-link .hospital-doctor-name { font-size:25px; } }
 .hospital-department-card { border:1px solid #e8dece; border-radius:5px; overflow:hidden; background:white; display:flex; flex-direction:column; transition:border-color .2s,box-shadow .2s; }
 .hospital-department-card:hover { border-color:#d4ae6e; box-shadow:0 12px 30px #8a6c3310; }
 .hospital-department-image { position:relative; aspect-ratio:1.8; display:grid; place-items:center; background:#f6ecdc; color:#a48249; }
