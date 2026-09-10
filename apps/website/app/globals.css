@@ -572,3 +572,27 @@ a.hospital-specialty:hover { text-decoration:underline; }
   .featured-copy h3 { font-size: 21px; }
   .post-grid, .post-grid-2 { grid-template-columns: 1fr; }
 }
+
+/* Home — about strip */
+.home-about { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; padding-block: 60px 70px; }
+.home-about-copy h2 { font-size: clamp(24px, 3vw, 34px); font-weight: 700; line-height: 1.55; }
+.home-about-copy > p { color: #756953; line-height: 1.95; font-size: 16.5px; margin-top: 16px; }
+.home-about-marks { display: flex; flex-direction: column; gap: 11px; margin-top: 22px; }
+.home-about-marks li { display: flex; align-items: center; gap: 11px; font-weight: 600; font-size: 15px; color: #574b39; }
+.home-about-marks svg { color: #8a6c33; flex-shrink: 0; }
+.home-about-actions { display: flex; align-items: center; gap: 16px; margin-top: 28px; flex-wrap: wrap; }
+.home-about-cta { display: inline-flex; align-items: center; gap: 9px; background: #8a6c33; color: white; border-radius: 5px; padding: 13px 24px; font-weight: 700; font-size: 15px; transition: background .2s; }
+.home-about-cta:hover { background: #755a29; }
+.home-about-phone { display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border: 1px solid #e0d2b4; border-radius: 5px; font-weight: 700; letter-spacing: .12em; color: #866830; font-size: 17px; }
+.home-about-media { position: relative; }
+.home-about-media img { width: 100%; aspect-ratio: 1.15; object-fit: cover; border-radius: 8px; display: block; }
+.home-about-badge { position: absolute; bottom: 18px; inset-inline-start: 18px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.94); border: 1px solid #e8dece; border-radius: 999px; padding: 9px 16px; font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #866830; }
+
+.home-departments { padding-block: 20px 55px; }
+.home-doctors { padding-block: 10px 65px; }
+
+@media(max-width:900px) {
+  .home-about { grid-template-columns: 1fr; gap: 32px; padding-block: 40px 45px; }
+  .home-about-media { order: -1; }
+  .home-about-media img { aspect-ratio: 1.5; }
+}

@@ -1,5 +1,6 @@
 import { LatestPosts } from './components/posts/post-cards'
 import { HomeHero } from './components/home-hero'
+import { HomeSections } from './components/home-sections'
 import type { Locale } from '@/lib/i18n'
 
 type DeptOption = { slug: string; name: string }
@@ -31,5 +32,5 @@ export default async function HomePage({
 }) {
   const { locale } = await params
   const { departments, doctors } = await getBookingOptions(locale)
-  return <><HomeHero locale={locale} departments={departments} doctors={doctors} /><LatestPosts locale={locale} /></>
+  return <><HomeHero locale={locale} departments={departments} doctors={doctors} /><HomeSections locale={locale} /><LatestPosts locale={locale} /></>
 }
