@@ -18,6 +18,7 @@ export const postInput = z.object({
   categoryAr: text(100), categoryEn: text(100), authorAr: text(120), authorEn: text(120),
   seoTitleAr: text(180), seoTitleEn: text(180), seoDescriptionAr: text(320), seoDescriptionEn: text(320),
   coverUrl: z.union([z.literal(''), z.string().url().refine((s) => /^https?:\/\//i.test(s))]).default(''),
+  isFeatured: z.boolean().default(false),
   status: z.enum(['draft', 'published', 'archived']), commentsEnabled: z.boolean(),
 }).superRefine((post, ctx) => {
   if (post.status === 'published') {
@@ -25,6 +26,9 @@ export const postInput = z.object({
       if (!sanitizeHtml(post[field], { allowedTags: [], allowedAttributes: {} }).trim()) {
         ctx.addIssue({ code: 'custom', path: [field], message: 'Both language versions need content before publishing' })
       }
+    }
+    if (!post.coverUrl) {
+      ctx.addIssue({ code: 'custom', path: ['coverUrl'], message: 'A cover image is required before publishing' })
     }
   }
 })

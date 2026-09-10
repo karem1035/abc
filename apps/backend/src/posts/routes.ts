@@ -17,7 +17,7 @@ function localize(p: typeof posts.$inferSelect, locale: 'ar' | 'en', detail = fa
   const ar = locale === 'ar'
   return { id: p.id, slug: p.slug, type: p.type, title: ar ? p.titleAr : p.titleEn, excerpt: ar ? p.excerptAr : p.excerptEn,
     category: ar ? p.categoryAr : p.categoryEn, author: ar ? p.authorAr : p.authorEn,
-    coverUrl: p.coverUrl, publishedAt: p.publishedAt, updatedAt: p.updatedAt,
+    coverUrl: p.coverUrl, isFeatured: p.isFeatured, publishedAt: p.publishedAt, updatedAt: p.updatedAt,
     ...(detail ? { content: ar ? p.contentAr : p.contentEn, seoTitle: ar ? p.seoTitleAr : p.seoTitleEn,
       seoDescription: ar ? p.seoDescriptionAr : p.seoDescriptionEn, commentsEnabled: p.commentsEnabled } : {}) }
 }
@@ -30,6 +30,13 @@ router.openapi(createRoute({ method: 'get', path: '/', tags: ['posts'], summary:
   const where = and(...clauses)
   const [rows, [total]] = await Promise.all([db.select().from(posts).where(where).orderBy(desc(posts.publishedAt), desc(posts.id)).limit(limit).offset((page-1)*limit), db.select({ count: sql<number>`count(*)::int` }).from(posts).where(where)])
   return c.json({ data: rows.map((p) => localize(p, locale)), total: total.count, page, limit })
+})
+
+// Admin routes precede /:slug and protect reads as well as writes.
+router.openapi(createRoute({ method:'get', path:'/featured', tags:['posts'], summary:'Featured posts (up to 4, public)', request:{query:localeQuery}, responses:{200:{description:'Featured posts'}} }), async c => {
+  const {locale}=c.req.valid('query')
+  const rows=await db.select().from(posts).where(and(eq(posts.status,'published'),eq(posts.isFeatured,true))).orderBy(desc(posts.publishedAt)).limit(4)
+  return c.json({data:rows.map(p=>localize(p,locale))})
 })
 
 // Admin routes precede /:slug and protect reads as well as writes.
@@ -62,6 +69,11 @@ for (const method of ['post','put'] as const) {
     const body=c.req.valid('json'); const id=method==='put'?c.req.param('id'):undefined
     const [existing]= id ? await db.select().from(posts).where(eq(posts.id,id)).limit(1) : []
     if(id&&!existing)return c.json({error:'Not found'},404)
+    // keep at most 4 featured posts
+    if(body.isFeatured && !existing?.isFeatured){
+      const [featuredCount]=await db.select({count:sql<number>`count(*)::int`}).from(posts).where(eq(posts.isFeatured,true))
+      if(featuredCount.count>=4)return c.json({error:'Featured limit reached (4). Unfeature another post first.'},409)
+    }
     const values={...body,coverUrl:body.coverUrl||null,publishedAt:body.status==='published'?(existing?.publishedAt??new Date()):(existing?.publishedAt??null),updatedAt:new Date()}
     try {
       const [row]=id ? await db.update(posts).set(values).where(eq(posts.id,id)).returning() : await db.insert(posts).values(values).returning()

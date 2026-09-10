@@ -64,6 +64,13 @@
       "when": 1789057754000,
       "tag": "0008_gorgeous_true_believers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789059907299,
+      "tag": "0009_sweet_doctor_spectrum",
+      "breakpoints": true
     }
   ]
 }

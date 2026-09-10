@@ -251,6 +251,7 @@ export const posts = pgTable('posts', {
   seoDescriptionAr: text('seo_description_ar').notNull().default(''),
   seoDescriptionEn: text('seo_description_en').notNull().default(''),
   coverUrl: text('cover_url'),
+  isFeatured: boolean('is_featured').notNull().default(false),
   status: text('status').notNull().default('draft'),
   commentsEnabled: boolean('comments_enabled').notNull().default(true),
   publishedAt: timestamp('published_at', { withTimezone: true }),

@@ -13,7 +13,7 @@ import { RichTextEditor } from '@/components/shared/richtext-editor'
 import { ImageInput } from '@/components/shared/image-input'
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog'
 
-const empty = { slug:'', type:'article', titleAr:'', titleEn:'', excerptAr:'', excerptEn:'', contentAr:'', contentEn:'', categoryAr:'', categoryEn:'', authorAr:'', authorEn:'', seoTitleAr:'', seoTitleEn:'', seoDescriptionAr:'', seoDescriptionEn:'', coverUrl:'', status:'draft', commentsEnabled:true }
+const empty = { slug:'', type:'article', titleAr:'', titleEn:'', excerptAr:'', excerptEn:'', contentAr:'', contentEn:'', categoryAr:'', categoryEn:'', authorAr:'', authorEn:'', seoTitleAr:'', seoTitleEn:'', seoDescriptionAr:'', seoDescriptionEn:'', coverUrl:'', status:'draft', commentsEnabled:true, isFeatured:false }
 type Post = typeof empty & {id:string; updatedAt:string}
 type Page<T> = {data:T[];total:number;page:number;limit:number}
 function useCopy() { const {dir}=useI18n(); return (ar:string,en:string)=>dir==='rtl'?ar:en }
@@ -52,6 +52,7 @@ function PostEditor({post}:{post?:Post}) {
  <div className="space-y-2"><Label htmlFor="post-type">{l('النوع','Type')}</Label><Select value={form.type} onValueChange={v=>v&&field('type',v)}><SelectTrigger id="post-type" className="w-full"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="article">{l('مقال / مدونة','Article / blog')}</SelectItem><SelectItem value="news">{l('خبر','News')}</SelectItem></SelectContent></Select></div>
  <div className="space-y-2"><Label htmlFor="post-status">{l('الحالة','Status')}</Label><Select value={form.status} onValueChange={v=>v&&field('status',v)}><SelectTrigger id="post-status" className="w-full"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="draft">{l('مسودة','Draft')}</SelectItem><SelectItem value="published">{l('منشور','Published')}</SelectItem><SelectItem value="archived">{l('مؤرشف','Archived')}</SelectItem></SelectContent></Select></div>
  <div className="space-y-2"><Label>{l('صورة الغلاف','Cover image')}</Label><ImageInput value={form.coverUrl} onChange={url=>field('coverUrl',url)}/></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.commentsEnabled} onChange={e=>field('commentsEnabled',e.target.checked)}/>{l('السماح بالتعليقات بعد المراجعة','Allow moderated comments')}</label>
+<label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.isFeatured} onChange={e=>field('isFeatured',e.target.checked)}/>{l('منشور مميز (حتى ٤ منشورات)','Featured post (max 4)')}</label>
  <p className="text-xs text-muted-foreground">{l('يجب إكمال اللغتين قبل النشر. المسودات لا تظهر على الموقع.','Complete both languages before publishing. Drafts stay off the public website.')}</p>
  {(validation||save.isError)&&<p role="alert" className="text-sm text-destructive">{validation||save.error?.message}</p>}<Button type="submit" disabled={save.isPending} className="w-full">{save.isPending&&<Loader2 className="size-4 animate-spin"/>}{l('حفظ المنشور','Save post')}</Button></aside></form></div>
 }
