@@ -543,7 +543,17 @@ a.hospital-specialty:hover { text-decoration:underline; }
 
 /* Featured editorial cards */
 .featured-posts { padding-block: 40px 10px; }
-.featured-grid { display: grid; gap: 22px; }
+.featured-grid { display: grid; gap: 22px; grid-template-columns: 1fr; }
+@media(min-width:768px) {
+  .featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* side-by-side cover/copy needs more room — stack inside cards until lg */
+  .featured-card { grid-template-columns: 1fr; }
+  .featured-cover { min-height: 190px; aspect-ratio: 1.8; }
+}
+@media(min-width:1200px) {
+  .featured-card { grid-template-columns: 1.1fr 1fr; }
+  .featured-cover { min-height: 240px; aspect-ratio: auto; }
+}
 .featured-card { display: grid; grid-template-columns: 1.1fr 1fr; border: 1px solid #e8dece; border-radius: 8px; overflow: hidden; background: white; transition: border-color .2s, box-shadow .2s; }
 .featured-card:hover { border-color: #d4ae6e; box-shadow: 0 14px 34px #8a6c3315; }
 .featured-cover { position: relative; min-height: 240px; background: linear-gradient(125deg, #faf5eb, #eedbbb); display: grid; place-items: center; color: #a28149; }
