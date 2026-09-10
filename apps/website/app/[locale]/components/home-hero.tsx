@@ -27,10 +27,13 @@ export function HomeHero({ locale }: { locale: Locale }) {
   const [reducedMotion, setReducedMotion] = useState(true)
   const [mobile, setMobile] = useState(true)
   const [department, setDepartment] = useState('')
-  const [preview, setPreview] = useState(false)
   const [country, setCountry] = useState<CountryCode>('EG')
+  const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [phoneError, setPhoneError] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [serverError, setServerError] = useState(false)
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -61,11 +64,35 @@ export function HomeHero({ locale }: { locale: Locale }) {
     setPaused(true)
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const valid = Boolean(parsePhoneNumberFromString(phone, country)?.isValid())
+    setServerError(false)
+    const parsed = parsePhoneNumberFromString(phone, country)
+    const valid = Boolean(parsed?.isValid())
     setPhoneError(!valid)
-    setPreview(valid)
+    if (!valid || submitting) return
+
+    setSubmitting(true)
+    try {
+      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/v1'
+      const res = await fetch(`${api}/bookings/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: name.trim(),
+          phone: parsed?.number ?? phone,
+          departmentSlug: department || undefined,
+        }),
+      })
+      if (!res.ok) throw new Error('request failed')
+      setSent(true)
+      setName('')
+      setPhone('')
+    } catch {
+      setServerError(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -101,13 +128,13 @@ export function HomeHero({ locale }: { locale: Locale }) {
             <div className="hero-booking-fields">
               <div className="hero-field"><label htmlFor="hero-department">{ar ? 'التخصص' : 'Department'}</label><Select value={department || 'any'} onValueChange={(value) => setDepartment(value === 'any' ? '' : value)} dir={ar ? 'rtl' : 'ltr'}><SelectTrigger id="hero-department" className="hero-select"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">{ar ? 'ساعدني في الاختيار' : 'Help me choose'}</SelectItem>{departments.map((item) => <SelectItem value={item.id} key={item.id}>{item[locale]}</SelectItem>)}</SelectContent></Select></div>
               <div className="hero-field"><label htmlFor="hero-doctor">{ar ? 'الطبيب' : 'Doctor'}</label><Select value="any" disabled={!department} dir={ar ? 'rtl' : 'ltr'}><SelectTrigger id="hero-doctor" className="hero-select"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">{ar ? 'أي طبيب مناسب' : 'Any suitable doctor'}</SelectItem></SelectContent></Select></div>
-              <label htmlFor="hero-name">{ar ? 'الاسم' : 'Your name'} <span aria-hidden="true">*</span><input id="hero-name" name="name" autoComplete="name" required maxLength={100} placeholder={ar ? 'اسمك بالكامل' : 'Full name'} /></label>
+              <label htmlFor="hero-name">{ar ? 'الاسم' : 'Your name'} <span aria-hidden="true">*</span><input id="hero-name" name="name" autoComplete="name" required maxLength={100} placeholder={ar ? 'اسمك بالكامل' : 'Full name'} value={name} onChange={(e) => setName(e.target.value)} /></label>
               <div className="hero-phone-field"><label htmlFor="hero-phone">{ar ? 'رقم الموبايل' : 'Mobile number'} <span aria-hidden="true">*</span></label><PhoneInput id="hero-phone" locale={locale} country={country} onCountryChange={setCountry} value={phone} onChange={setPhone} invalid={phoneError} required />{phoneError && <p role="alert" className="mt-2 text-xs text-destructive">{ar ? 'أدخل رقم هاتف صحيح.' : 'Enter a valid phone number.'}</p>}</div>
             </div>
-            <button className="hero-booking-submit" type="submit">{ar ? 'اطلب موعدك' : 'Request an appointment'}<ArrowUpRight size={19} className="rtl:-scale-x-100" /></button>
+            <button className="hero-booking-submit" type="submit" disabled={submitting}>{submitting ? (ar ? 'جارٍ الإرسال…' : 'Sending…') : (ar ? 'اطلب موعدك' : 'Request an appointment')}<ArrowUpRight size={19} className="rtl:-scale-x-100" /></button>
             <p className="hero-booking-note">{ar ? 'الموعد يتم تأكيده باتصال من فريقنا.' : 'Your appointment is confirmed by a call from our team.'}</p>
-            <p className="hero-booking-preview-label">{ar ? 'نموذج للمعاينة فقط — لا يتم إرسال البيانات.' : 'Form preview only — no details are sent.'}</p>
-            {preview && <div className="hero-booking-feedback" role="status"><CheckCircle2 size={19} /><span>{ar ? 'المعاينة جاهزة. لم يتم إرسال طلب أو حفظ بياناتك.' : 'Preview complete. No request was sent or details saved.'}</span></div>}
+            {sent && <div className="hero-booking-feedback" role="status"><CheckCircle2 size={19} /><span>{ar ? 'تم استلام طلبك — سيتواصل معك فريقنا لتأكيد الموعد.' : 'Request received — our team will call you to confirm.'}</span></div>}
+            {serverError && <div className="hero-booking-feedback" role="alert"><span>{ar ? 'حدث خطأ — حاول مرة أخرى.' : 'Something went wrong — please try again.'}</span></div>}
           </form>
         </div>
       </div>

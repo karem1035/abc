@@ -142,3 +142,35 @@ export const doctors = pgTable(
 
 export type Doctor = typeof doctors.$inferSelect
 export type NewDoctor = typeof doctors.$inferInsert
+
+export const bookings = pgTable(
+  'bookings',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    // patient contact
+    patientName: text('patient_name').notNull(),
+    phone: text('phone').notNull(), // E.164
+    // original request
+    source: text('source').default('website').notNull(), // website | walk_in | phone
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    doctorId: uuid('doctor_id').references(() => doctors.id, { onDelete: 'set null' }),
+    preferredDate: text('preferred_date'), // free-text/date from the patient
+    patientNotes: text('patient_notes'),
+    // lifecycle: new → contacted → confirmed → completed (or declined/cancelled)
+    status: text('status').default('new').notNull(), // new | contacted | confirmed | declined | cancelled | completed
+    // agreed appointment (filled by staff)
+    appointmentDate: text('appointment_date'), // YYYY-MM-DD
+    appointmentTime: text('appointment_time'), // HH:mm
+    assignedTo: uuid('assigned_to').references(() => users.id, { onDelete: 'set null' }),
+    staffNotes: text('staff_notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('bookings_created_at_idx').on(table.createdAt),
+    index('bookings_status_idx').on(table.status),
+  ],
+)
+
+export type Booking = typeof bookings.$inferSelect
+export type NewBooking = typeof bookings.$inferInsert

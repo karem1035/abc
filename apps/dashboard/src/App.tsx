@@ -3,6 +3,7 @@ import { AppShell } from '@/components/layout/app-shell'
 import { LoginPage } from '@/pages/login'
 import { DashboardPage } from '@/pages/dashboard'
 import { PlaceholderPage } from '@/pages/placeholder'
+import { BookingsPage } from '@/pages/bookings'
 import { UsersPage } from '@/pages/users'
 import { ProfilePage } from '@/pages/profile'
 import { AuditLogsPage } from '@/pages/audit-logs'
@@ -62,10 +63,7 @@ export default function App() {
             </RequireRole>
           }
         />
-        <Route
-          path="bookings"
-          element={<PlaceholderPage title="Bookings" />}
-        />
+        <Route path="bookings" element={<BookingsPage />} />
         <Route
           path="content"
           element={<PlaceholderPage title="Content" />}
