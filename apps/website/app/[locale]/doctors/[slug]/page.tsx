@@ -1,3 +1,6 @@
+import { contentFetch } from '@/lib/content-fetch'
+import { formatTime } from '@/lib/time'
+import { staticSlugs } from '@/lib/static-content'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -23,7 +26,7 @@ type DoctorDetail = {
 async function getDoctor(slug: string, locale: Locale): Promise<DoctorDetail | null> {
   const api = process.env.API_URL ?? 'http://localhost:3000/v1'
   try {
-    const res = await fetch(`${api}/doctors/${slug}?locale=${locale}`, {
+    const res = await contentFetch(`${api}/doctors/${slug}?locale=${locale}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null
@@ -110,7 +113,7 @@ export default async function DoctorPage({
                   <li key={i} className="flex items-center justify-between py-2.5 text-sm">
                     <span className="font-bold">{dayNames[s.weekday]}</span>
                     <span className="text-muted-foreground" dir="ltr">
-                      {s.startTime} — {s.endTime}
+                      {formatTime(s.startTime)} — {formatTime(s.endTime)}
                     </span>
                   </li>
                 ))}
@@ -124,4 +127,9 @@ export default async function DoctorPage({
       </section>
     </>
   )
+}
+
+export const revalidate = 300
+export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  return staticSlugs('doctors', params.locale)
 }

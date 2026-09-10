@@ -3,8 +3,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { CalendarDays, Check, Clock, Loader2 } from 'lucide-react'
 import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Dictionary, Locale } from '@/lib/i18n'
+import { formatTime } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import { PhoneInput } from '../ui/phone-input'
 
@@ -17,9 +18,9 @@ function fmtDate(date: Date) {
 }
 
 /** Next `count` dates on any of the given weekdays (0=Sunday), starting tomorrow. */
-function upcomingDays(weekdays: number[], count = 7, maxDays = 30) {
+function upcomingDays(weekdays: number[], count = 30, maxDays = 30) {
   const days: Date[] = []
-  const cursor = new Date()
+  const cursor = new Date(`${new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())}T12:00:00`)
   cursor.setDate(cursor.getDate() + 1)
   for (let i = 0; i < maxDays && days.length < count; i++) {
     if (weekdays.includes(cursor.getDay())) days.push(new Date(cursor))
@@ -44,12 +45,17 @@ export function SlotBooking({
     ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
     : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-  const weekdays = [...new Set(schedule.map((s) => s.weekday))]
-  const days = upcomingDays(weekdays)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const days = useMemo(() => mounted ? upcomingDays([...new Set(schedule.map(s => s.weekday))]) : [], [mounted, schedule])
+  const [datePage, setDatePage] = useState(0)
 
   const [date, setDate] = useState<string>(days[0] ? fmtDate(days[0]) : '')
   const [slots, setSlots] = useState<string[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const [slotsError, setSlotsError] = useState(false)
+  const [retry, setRetry] = useState(0)
+  useEffect(() => { setDate(days[0] ? fmtDate(days[0]) : ''); setDatePage(0) }, [days, doctorSlug])
   const [slot, setSlot] = useState('')
 
   const [name, setName] = useState('')
@@ -63,21 +69,35 @@ export function SlotBooking({
   // fetch slots whenever the selected date changes
   useEffect(() => {
     if (!date) return
+    const controller = new AbortController()
     setLoadingSlots(true)
+    setSlotsError(false)
+    setSlots([])
     setSlot('')
-    fetch(`${API_URL}/doctors/${doctorSlug}/slots?date=${date}`)
-      .then((r) => r.json())
-      .then((body: { data: { slots: string[] } }) => setSlots(body.data?.slots ?? []))
-      .catch(() => setSlots([]))
-      .finally(() => setLoadingSlots(false))
-  }, [date, doctorSlug])
+    fetch(`${API_URL}/doctors/${doctorSlug}/slots?date=${date}`, { signal: controller.signal, cache: 'no-store' })
+      .then((r) => { if (!r.ok) throw new Error('Unavailable'); return r.json() })
+      .then((body: { data: { slots: string[] } }) => { if (!controller.signal.aborted) setSlots(body.data?.slots ?? []) })
+      .catch(() => { if (!controller.signal.aborted) setSlotsError(true) })
+      .finally(() => { if (!controller.signal.aborted) setLoadingSlots(false) })
+    return () => controller.abort()
+  }, [date, doctorSlug, retry])
+
+  function changeDatePage(next: number) {
+    const first = days[next * 6]
+    if (!first) return
+    setDatePage(next)
+    setSlot('')
+    setSlots([])
+    setLoadingSlots(true)
+    setDate(fmtDate(first))
+  }
 
   async function submit() {
     setServerError(false)
     const parsed = parsePhoneNumberFromString(phone, country)
     const valid = Boolean(parsed?.isValid())
     setPhoneError(!valid)
-    if (!valid || !slot || submitting) return
+    if (!valid || !slot || loadingSlots || name.trim().length < 2 || submitting) return
 
     setSubmitting(true)
     try {
@@ -134,37 +154,45 @@ export function SlotBooking({
             <p className="font-bold">{ar ? 'تم استلام طلبك' : 'Request received'}</p>
             <p className="text-sm text-muted-foreground">
               {ar
-                ? `موعدك المبدئي: ${slot} — ${date}. سيتواصل معك فريقنا للتأكيد.`
-                : `Provisional appointment: ${date} at ${slot}. Our team will call to confirm.`}
+                ? `موعدك المبدئي: ${formatTime(slot)} — ${date}. سيتواصل معك فريقنا للتأكيد.`
+                : `Provisional appointment: ${date} at ${formatTime(slot)}. Our team will call to confirm.`}
             </p>
           </motion.div>
         ) : (
           <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-            {/* day chips */}
-            <div className="flex flex-wrap gap-2">
-              {days.map((d) => {
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-bold">{ar ? '١. اختر اليوم' : '1. Choose a date'}</h3>
+              <div className="flex gap-2">
+                <button type="button" className="min-h-11 rounded-lg border px-3 disabled:opacity-40" disabled={datePage === 0} onClick={() => changeDatePage(datePage - 1)}>{ar ? 'السابق' : 'Earlier'}</button>
+                <button type="button" className="min-h-11 rounded-lg border px-3 disabled:opacity-40" disabled={(datePage + 1) * 6 >= days.length} onClick={() => changeDatePage(datePage + 1)}>{ar ? 'التالي' : 'Later'}</button>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2" aria-label={ar ? 'الأيام المتاحة' : 'Available dates'}>
+              {days.slice(datePage * 6, datePage * 6 + 6).map((d) => {
                 const value = fmtDate(d)
                 return (
                   <button
                     key={value}
                     type="button"
-                    onClick={() => setDate(value)}
+                    aria-pressed={date === value}
+                    onClick={() => { if (date !== value) { setSlot(''); setSlots([]); setLoadingSlots(true); setDate(value) } }}
                     className={cn(
-                      'flex min-w-18 flex-col items-center rounded-lg border px-3 py-2 transition-colors',
+                      'flex min-h-24 min-w-0 flex-col justify-center items-center rounded-lg border px-3 py-2 transition-colors',
                       date === value
                         ? 'border-brand bg-brand-soft text-brand-deep'
                         : 'border-border text-muted-foreground hover:border-brand/50',
                     )}
                   >
                     <span className="text-xs font-bold">{dayNames[d.getDay()]}</span>
-                    <span className="text-sm" dir="ltr">{d.getDate()}/{d.getMonth() + 1}</span>
+                    <span className="text-2xl font-bold">{d.toLocaleDateString(locale, { day: 'numeric' })}</span><span className="text-xs">{d.toLocaleDateString(locale, { month: 'long' })}</span>
                   </button>
                 )
               })}
             </div>
 
-            {/* slots */}
-            {loadingSlots ? (
+            {mounted && !days.length && <p role="status">{ar ? 'لا توجد أيام متاحة خلال الشهر القادم.' : 'No scheduled dates in the next 30 days.'}</p>}
+            <h3 className="font-bold">{ar ? '٢. اختر الوقت' : '2. Choose a time'}</h3>
+            {slotsError ? <div role="alert"><p>{ar ? 'تعذر تحميل المواعيد.' : 'Unable to load times.'}</p><button type="button" className="min-h-11 underline" onClick={() => setRetry(n => n + 1)}>{ar ? 'حاول مرة أخرى' : 'Try again'}</button></div> : !mounted || loadingSlots ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
                 {ar ? 'جارٍ تحميل المواعيد…' : 'Loading times…'}
@@ -179,17 +207,18 @@ export function SlotBooking({
                   <button
                     key={s}
                     type="button"
+                    aria-pressed={slot === s}
                     onClick={() => setSlot(s)}
                     dir="ltr"
                     className={cn(
-                      'flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-bold transition-colors',
+                      'flex min-h-12 items-center justify-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-bold transition-colors',
                       slot === s
                         ? 'border-brand bg-brand text-brand-foreground'
                         : 'border-border text-muted-foreground hover:border-brand/50 hover:text-foreground',
                     )}
                   >
                     <Clock className="size-3.5" />
-                    {s}
+                    {formatTime(s)}
                   </button>
                 ))}
               </div>
@@ -202,12 +231,19 @@ export function SlotBooking({
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-3 overflow-hidden"
               >
+                <p className="rounded-lg bg-brand-soft p-3 font-bold" role="status">{new Date(`${date}T12:00:00`).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · <bdi>{formatTime(slot)}</bdi></p>
+                <h3 className="font-bold">{ar ? '٣. بيانات التواصل' : '3. Your details'}</h3>
+                <label htmlFor="booking-name" className="block text-sm">{ar ? 'الاسم بالكامل' : 'Full name'}</label>
                 <input
+                  id="booking-name"
+                  autoComplete="name"
+                  maxLength={100}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={ar ? 'الاسم بالكامل' : 'Full name'}
                   className="h-11 w-full rounded-lg border border-border bg-background px-3.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                 />
+                <label htmlFor="slot-phone" className="block text-sm">{ar ? 'رقم الهاتف' : 'Phone number'}</label>
                 <PhoneInput
                   id="slot-phone"
                   locale={locale}

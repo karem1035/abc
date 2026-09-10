@@ -43,7 +43,7 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dictionary }) {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         {/* Brand: logo, about, socials */}
         <div className="space-y-5">
-          <Link href={homeHref} className="flex items-center" aria-label={t.siteName}>
+          <Link prefetch={true} href={homeHref} className="flex items-center" aria-label={t.siteName}>
             <Image
               src="/abc-logo.webp"
               alt={t.siteName}

@@ -1,3 +1,4 @@
+import { contentFetch } from '@/lib/content-fetch'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -21,7 +22,7 @@ type PublicDepartment = {
 async function getDepartments(locale: Locale): Promise<PublicDepartment[]> {
   const api = process.env.API_URL ?? 'http://localhost:3000/v1'
   try {
-    const res = await fetch(`${api}/departments?locale=${locale}`, { next: { revalidate: 60 } })
+    const res = await contentFetch(`${api}/departments?locale=${locale}`, { next: { revalidate: 60 } })
     if (!res.ok) return []
     return ((await res.json()) as { data: PublicDepartment[] }).data
   } catch {

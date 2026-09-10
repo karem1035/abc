@@ -1,3 +1,5 @@
+import { contentFetch } from '@/lib/content-fetch'
+import { HomeFaq } from './components/home-faq'
 import { LatestPosts } from './components/posts/post-cards'
 import { HomeHero } from './components/home-hero'
 import { HomeSections } from './components/home-sections'
@@ -11,8 +13,8 @@ async function getBookingOptions(locale: Locale) {
   const fallback = { departments: [] as DeptOption[], doctors: [] as DoctorOption[] }
   try {
     const [deptRes, docRes] = await Promise.all([
-      fetch(`${api}/departments?locale=${locale}`, { next: { revalidate: 120 } }),
-      fetch(`${api}/doctors?locale=${locale}`, { next: { revalidate: 120 } }),
+      contentFetch(`${api}/departments?locale=${locale}`, { next: { revalidate: 120 } }),
+      contentFetch(`${api}/doctors?locale=${locale}`, { next: { revalidate: 120 } }),
     ])
     if (!deptRes.ok || !docRes.ok) return fallback
     const [depts, docs] = await Promise.all([deptRes.json(), docRes.json()])
@@ -32,5 +34,5 @@ export default async function HomePage({
 }) {
   const { locale } = await params
   const { departments, doctors } = await getBookingOptions(locale)
-  return <><HomeHero locale={locale} departments={departments} doctors={doctors} /><HomeSections locale={locale} /><LatestPosts locale={locale} /></>
+  return <><HomeHero locale={locale} departments={departments} doctors={doctors} /><HomeSections locale={locale} /><LatestPosts locale={locale} /><HomeFaq locale={locale} /></>
 }

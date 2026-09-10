@@ -1,3 +1,5 @@
+import { contentFetch } from '@/lib/content-fetch'
+import { staticSlugs } from '@/lib/static-content'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDictionary, type Locale } from '@/lib/i18n'
@@ -8,7 +10,7 @@ type CmsPage = { slug: string; title: string; content: string | null }
 async function getPage(slug: string, locale: Locale): Promise<CmsPage | null> {
   const api = process.env.API_URL ?? 'http://localhost:3000/v1'
   try {
-    const res = await fetch(`${api}/content/pages/${slug}?locale=${locale}`, {
+    const res = await contentFetch(`${api}/content/pages/${slug}?locale=${locale}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null
@@ -50,4 +52,9 @@ export default async function CmsPageRoutePage({
       </section>
     </>
   )
+}
+
+export const revalidate = 300
+export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  return staticSlugs('content/pages', params.locale)
 }

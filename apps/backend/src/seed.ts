@@ -216,6 +216,21 @@ async function seedDepartmentsData() {
 }
 
 // Weekly clinic rules: [doctorSlug, weekday(0=Sun), start, end, slotMinutes]
+const moreSchedules: Array<[string, number, string, string, number]> = [
+  ['heba-mostafa', 0, '12:00', '16:00', 30],
+  ['heba-mostafa', 2, '12:00', '16:00', 30],
+  ['heba-mostafa', 4, '12:00', '16:00', 30],
+  ['youssef-kamel', 1, '14:00', '19:00', 30],
+  ['youssef-kamel', 3, '14:00', '19:00', 30],
+  ['nour-eldeen', 6, '11:00', '16:00', 30],
+  ['nour-eldeen', 2, '11:00', '16:00', 30],
+  ['rania-fahmy', 0, '09:00', '13:00', 30],
+  ['rania-fahmy', 1, '09:00', '13:00', 30],
+  ['rania-fahmy', 4, '15:00', '19:00', 30],
+  ['tarek-nour', 3, '10:00', '13:00', 30],
+  ['tarek-nour', 6, '10:00', '13:00', 30],
+]
+
 const seedSchedules: Array<[string, number, string, string, number]> = [
   ['ahmed-mohamed', 0, '10:00', '14:00', 30],
   ['ahmed-mohamed', 2, '10:00', '14:00', 30],
@@ -229,6 +244,54 @@ const seedSchedules: Array<[string, number, string, string, number]> = [
   ['omar-farouk', 6, '10:00', '14:00', 30],
 ]
 
+const moreDoctors: Array<{
+  slug: string; nameAr: string; nameEn: string
+  titleAr: string; titleEn: string; dept: string; sortOrder: number
+  photoUrl: string
+  contentAr: string; contentEn: string
+}> = [
+  {
+    slug: 'heba-mostafa', nameAr: 'د. هبة مصطفى', nameEn: 'Dr. Heba Mostafa',
+    titleAr: 'استشاري الجراحة العامة وجراحات السمنة', titleEn: 'Consultant General & Bariatric Surgeon',
+    dept: 'internal-medicine', sortOrder: 2,
+    photoUrl: 'https://images.unsplash.com/photo-1550831107-1553da8c8464?w=400&q=80&auto=format&fit=crop',
+    contentAr: '<h2>نبذة</h2><p>استشارية الجراحة العامة وجراحات السمنة والمناظير، خبرة أكثر من ١٢ عامًا في تحويل المسار وتكميم المعدة بالمنظار، مع اهتمام خاص بمتابعة المريض قبل الجراحة وبعدها لضمان نتائج آمنة ومستدامة.</p><h3>المؤهلات</h3><ul><li>بكالوريوس الطب والجراحة — جامعة عين شمس</li><li>ماجستير الجراحة العامة</li><li>زمالة جراحات السمنة والمناظير</li><li>عضو الجمعية الدولية لجراحة السمنة (IFSO)</li></ul><h3>الخدمات</h3><ul><li>تكميم المعدة بالمنظار</li><li>تحويل المسار</li><li>جراحات المرارة والفتوق بالمنظار</li><li>برامج متابعة التغذية بعد الجراحة</li></ul><p>تؤمن د. هبة أن جراحة السمنة رحلة متكاملة وليست عملية فقط؛ لذلك يبدأ العلاج بجلسات تقييم شاملة تنتهي ببرنامج متابعة يمتد لما بعد الجراحة.</p>',
+    contentEn: '<h2>About</h2><p>Consultant general and bariatric surgeon with 12+ years in laparoscopic sleeve gastrectomy and gastric bypass, with a special focus on comprehensive pre- and post-operative care for safe, lasting outcomes.</p><h3>Qualifications</h3><ul><li>MBBCh — Ain Shams University</li><li>MSc General Surgery</li><li>Fellowship in bariatric and laparoscopic surgery</li><li>Member, IFSO</li></ul><h3>Services</h3><ul><li>Laparoscopic sleeve gastrectomy</li><li>Gastric bypass</li><li>Laparoscopic gallbladder and hernia surgery</li><li>Post-operative nutrition follow-up programs</li></ul><p>Dr. Heba believes bariatric surgery is a journey, not just a procedure — care begins with full assessment sessions and continues with a structured follow-up program well beyond surgery.</p>',
+  },
+  {
+    slug: 'youssef-kamel', nameAr: 'د. يوسف كامل', nameEn: 'Dr. Youssef Kamel',
+    titleAr: 'استشاري الجراحة والتجميل', titleEn: 'Consultant Plastic Surgeon',
+    dept: 'orthopedics', sortOrder: 2,
+    photoUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80&auto=format&fit=crop',
+    contentAr: '<h2>نبذة</h2><p>استشاري جراحة التجميل وإعادة البناء، متخصص في عمليات تنسيق القوام ونحت الجسم وجراحات إعادة البناء بعد الحوادث، بأسلوب يحرص على نتائج طبيعية تحافظ على هوية المريض.</p><h3>المؤهلات</h3><ul><li>بكالوريوس الطب — جامعة القاهرة</li><li>ماجستير الجراحة التجميلية</li><li>دبلوم جراحات إعادة البناء — المملكة المتحدة</li></ul><h3>أبرز الخدمات</h3><ul><li>شد ونحت الجسم بعد نزول الوزن</li><li>جراحات الأنف والأذن</li><li>زراعة الشعر الطبيعية</li><li>إعادة بناء الجروح والحروق</li></ul><p>يقسم د. يوسف كل حالة إلى جلسات تخطيط مفصلة مع تصوير ثلاثي الأبعاد قبل تحديد الخطة الجراحية، حرصًا على توقعات واقعية ونتائج دقيقة.</p>',
+    contentEn: '<h2>About</h2><p>Consultant plastic and reconstructive surgeon specializing in body contouring and post-trauma reconstruction, with a philosophy of natural results that respect each patient\u2019s identity.</p><h3>Qualifications</h3><ul><li>MBBCh — Cairo University</li><li>MSc Plastic Surgery</li><li>Reconstructive surgery diploma — UK</li></ul><h3>Key services</h3><ul><li>Post-weight-loss body contouring</li><li>Rhinoplasty and otoplasty</li><li>Natural hair transplantation</li><li>Wound and burn reconstruction</li></ul><p>Dr. Youssef plans every case in detailed sessions with 3D imaging before agreeing the surgical plan, ensuring realistic expectations and precise outcomes.</p>',
+  },
+  {
+    slug: 'nour-eldeen', nameAr: 'د. نور الدين حسن', nameEn: 'Dr. Nour Eldeen Hassan',
+    titleAr: 'أخصائي جراحة المخ والأعصاب والعمود الفقري', titleEn: 'Neurosurgery & Spine Specialist',
+    dept: 'internal-medicine', sortOrder: 3,
+    photoUrl: 'https://images.unsplash.com/photo-1585842378054-ee2e52f94ba2?w=400&q=80&auto=format&fit=crop',
+    contentAr: '<h2>نبذة</h2><p>أخصائي جراحة المخ والأعصاب والعمود الفقري، خبرة في جراحات الغضروف القطني وعنق الرحم بالتدخل البسيط، وعلاج الضغط على النخاع الشوكي بأحدث تقنيات المجهر الجراحي.</p><h3>المؤهلات</h3><ul><li>بكالوريوس الطب — جامعة المنصورة</li><li>ماجستير جراحة المخ والأعصاب</li><li>تدريب متقدم في جراحات العمود الفقري بالمنظار</li></ul><h3>حالات نعالجها</h3><ul><li>الانزلاق الغضروفي القطني والعنقي</li><li>ضيق القنا الشوكية</li><li>آلام الظهر المزمنة</li><li>إصابات الأعصاب الطرفية</li></ul><p>يبدأ د. نور الدين دائمًا بالحلول غير الجراحية ما أمكن، ولا يوصي بالجراحة عند وجود بديل آمن — لأن أفضل جراحة هي التي يمكن تجنبها.</p>',
+    contentEn: '<h2>About</h2><p>Neurosurgery and spine specialist experienced in minimally invasive lumbar and cervical disc surgery, and spinal cord decompression using advanced microsurgical techniques.</p><h3>Qualifications</h3><ul><li>MBBCh — Mansoura University</li><li>MSc Neurosurgery</li><li>Advanced training in endoscopic spine surgery</li></ul><h3>Conditions we treat</h3><ul><li>Lumbar and cervical disc herniation</li><li>Spinal stenosis</li><li>Chronic back pain</li><li>Peripheral nerve injuries</li></ul><p>Dr. Nour Eldeen always starts with non-surgical options where possible and only recommends surgery when no safe alternative exists — the best operation is the one avoided.</p>',
+  },
+  {
+    slug: 'rania-fahmy', nameAr: 'د. رانيا فهمي', nameEn: 'Dr. Rania Fahmy',
+    titleAr: 'أخصائية أمراض الجهاز الهضمي والكبد', titleEn: 'Gastroenterology & Hepatology Specialist',
+    dept: 'internal-medicine', sortOrder: 4,
+    photoUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80&auto=format&fit=crop',
+    contentAr: '<h2>نبذة</h2><p>أخصائية أمراض الجهاز الهضمي والكبد، متخصصة في منظار القولون والمعدة وعلاج فيروسات الكبد وأمراض المناعة الذاتية للكبد، مع اهتمام خاص بالكشف المبكر لسرطانات الجهاز الهضمي.</p><h3>المؤهلات</h3><ul><li>بكالوريوس الطب — جامعة الإسكندرية</li><li>ماجستير أمراض الجهاز الهضمي</li><li>دكتوراه أمراض الكبد</li></ul><h3>الخدمات</h3><ul><li>منظار المعدة والقولون</li><li>متابعة وعلاج فيروسات الكبد</li><li>تقييم أمراض الالتهاب المعوي المزمن</li><li>برامج الفحص المبكر للقولون</li></ul><p>تشدد د. رانيا على أن معظم أمراض الجهاز الهضمي تُدار بنجاح عند اكتشافها مبكرًا؛ لذلك تصمم لكل مريض خطة فحص دورية تناسب عمره وتاريخه العائلي.</p>',
+    contentEn: '<h2>About</h2><p>Gastroenterology and hepatology specialist focused on endoscopy, hepatitis management and autoimmune liver disease, with a strong interest in early detection of GI cancers.</p><h3>Qualifications</h3><ul><li>MBBCh — Alexandria University</li><li>MSc Gastroenterology</li><li>PhD Hepatology</li></ul><h3>Services</h3><ul><li>Upper GI endoscopy and colonoscopy</li><li>Hepatitis follow-up and treatment</li><li>Chronic IBD assessment</li><li>Screening programs for colorectal cancer</li></ul><p>Dr. Rania emphasizes that most GI conditions are managed successfully when caught early, so she designs a periodic screening plan tailored to each patient\u2019s age and family history.</p>',
+  },
+  {
+    slug: 'tarek-nour', nameAr: 'د. طارق نور', nameEn: 'Dr. Tarek Nour',
+    titleAr: 'استشاري التخدير والعناية المركزة', titleEn: 'Consultant Anesthesia & ICU',
+    dept: 'cardiology', sortOrder: 3,
+    photoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&auto=format&fit=crop',
+    contentAr: '<h2>نبذة</h2><p>استشاري التخدير والعناية المركزة، مسؤول عن بروتوكولات التخدير في غرف العمليات ووحدة العناية المركزة بالمستشفى، وخبرة خاصة في التخدير لجراحات السمنة ومرضى القلب عالي الخطورة.</p><h3>المؤهلات</h3><ul><li>بكالوريوس الطب — جامعة القاهرة</li><li>ماجستير التخدير والعناية المركزة</li><li>الزمالة المصرية للتخدير</li></ul><h3>مجالات الخبرة</h3><ul><li>تخدير جراحات السمنة عالية الخطورة</li><li>إدارة وحدة العناية المركزة</li><li>مسكنات الآلام بعد الجراحة</li><li>التعامل مع الحالات الحرجة والطوارئ</li></ul><p>يرى د. طارق أن سلامة الجراحة تبدأ من غرفة التخدير؛ فيخضع كل مريض لتقييم شامل قبل الجراحة، وتُعدل جرعات التخدير بدقة حسب الحالة الصحية والوزن.</p>',
+    contentEn: '<h2>About</h2><p>Consultant anesthesiologist and intensivist leading anesthesia protocols in the OR and ICU, with particular expertise in anesthesia for bariatric surgery and high-risk cardiac patients.</p><h3>Qualifications</h3><ul><li>MBBCh — Cairo University</li><li>MSc Anesthesia & Critical Care</li><li>Egyptian Fellowship in Anesthesia</li></ul><h3>Areas of expertise</h3><ul><li>Anesthesia for high-risk bariatric surgery</li><li>ICU management</li><li>Post-operative pain control</li><li>Critical emergencies</li></ul><p>Dr. Tarek believes surgical safety begins in the anesthesia room: every patient gets a full pre-operative assessment, with anesthesia dosing precisely adjusted to their condition and weight.</p>',
+  },
+]
+
 const seedDoctorContent: Record<string, { ar: string; en: string }> = {
   'ahmed-mohamed': {
     ar: '<h2>نبذة</h2><p>استشاري أمراض القلب بخبرة تتجاوز 15 عامًا في القسطرة التشخيصية والتداخلية وعلاج أمراض الشريان التاجي.</p><ul><li>بكالوريوس الطب والجراحة — جامعة القاهرة</li><li>ماجستير أمراض القلب — الجامعة نفسها</li><li>عضو الجمعية الأوروبية لأمراض القلب</li></ul>',
@@ -236,10 +299,12 @@ const seedDoctorContent: Record<string, { ar: string; en: string }> = {
   },
 }
 
+const allSchedules: Array<[string, number, string, string, number]> = [...seedSchedules, ...moreSchedules]
+
 async function seedScheduleData() {
   console.log('seeding doctor schedules...')
   const docs = await db.select().from(doctors)
-  for (const [slug, weekday, startTime, endTime, slotMinutes] of seedSchedules) {
+  for (const [slug, weekday, startTime, endTime, slotMinutes] of allSchedules) {
     const doc = docs.find((d) => d.slug === slug)
     if (!doc) continue
     const exists = await db
@@ -255,6 +320,33 @@ async function seedScheduleData() {
       .limit(1)
     if (exists.length === 0) {
       await db.insert(doctorSchedules).values({ doctorId: doc.id, weekday, startTime, endTime, slotMinutes })
+    }
+  }
+
+  console.log('seeding more doctors...')
+  const allDepts = await db.select().from(departments)
+  for (const doc of moreDoctors) {
+    const { contentAr, contentEn, sortOrder, ...rest } = doc
+    const existing = await db
+      .select({ id: doctors.id })
+      .from(doctors)
+      .where(eq(doctors.slug, doc.slug))
+      .limit(1)
+      .then((r) => r[0] ?? null)
+    const values = {
+      ...rest,
+      contentAr,
+      contentEn,
+      sortOrder,
+      departmentId: allDepts.find((d) => d.slug === doc.dept)?.id ?? null,
+      status: 'published' as const,
+    }
+    if (existing) {
+      await db.update(doctors).set(values).where(eq(doctors.id, existing.id))
+      console.log(`updated doctor: ${doc.slug}`)
+    } else {
+      await db.insert(doctors).values(values)
+      console.log(`created doctor: ${doc.slug}`)
     }
   }
 

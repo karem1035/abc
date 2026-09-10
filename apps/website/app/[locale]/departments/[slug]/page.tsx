@@ -1,3 +1,5 @@
+import { contentFetch } from '@/lib/content-fetch'
+import { staticSlugs } from '@/lib/static-content'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -29,7 +31,7 @@ type DepartmentDetail = {
 async function getDepartment(slug: string, locale: Locale): Promise<DepartmentDetail | null> {
   const api = process.env.API_URL ?? 'http://localhost:3000/v1'
   try {
-    const res = await fetch(`${api}/departments/${slug}?locale=${locale}`, {
+    const res = await contentFetch(`${api}/departments/${slug}?locale=${locale}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null
@@ -69,4 +71,9 @@ export default async function DepartmentDetailPage({
     </section>
     <section className="hospital-container hospital-department-team"><div className="hospital-section-title"><h2>{t.departments.doctorsIn}</h2><Link href={`/${locale}/doctors?dept=${encodeURIComponent(slug)}`}>{ar ? 'عرض أطباء القسم' : 'View department doctors'}</Link></div>{dept.doctors.length === 0 ? <p className="hospital-directory-empty">{t.departments.noDoctors}</p> : <div className="hospital-doctor-grid">{dept.doctors.map((doc) => <DoctorCard key={doc.id} doctor={{ ...doc, departmentName: dept.name }} locale={locale} />)}</div>}</section>
   </div>
+}
+
+export const revalidate = 300
+export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  return staticSlugs('departments', params.locale)
 }

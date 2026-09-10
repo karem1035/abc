@@ -596,3 +596,15 @@ a.hospital-specialty:hover { text-decoration:underline; }
   .home-about-media { order: -1; }
   .home-about-media img { aspect-ratio: 1.5; }
 }
+
+/* Full-width alternating section surfaces, including constrained content sections. */
+main section:not(section section):not(.home-hero) {
+  background-color: #fff;
+  box-shadow: 0 0 0 100vmax #fff;
+  clip-path: inset(0 -100vmax);
+}
+main section:nth-of-type(2n):not(section section):not(.home-hero) {
+  background-color: #f7f3eb;
+  box-shadow: 0 0 0 100vmax #f7f3eb;
+}
+.home-departments, .home-doctors, .home-faq { padding-block: clamp(36px, 5vw, 64px); }

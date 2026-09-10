@@ -1,3 +1,4 @@
+import { contentFetch } from '@/lib/content-fetch'
 import Link from 'next/link'
 import { ArrowUpRight, Award, HeartPulse, Stethoscope, Users } from 'lucide-react'
 import type { Locale } from '@/lib/i18n'
@@ -15,8 +16,8 @@ async function getHomeData(locale: Locale) {
   const empty = { departments: [] as Dept[], doctors: [] as DoctorCardData[] }
   try {
     const [deptRes, docRes] = await Promise.all([
-      fetch(`${api}/departments?locale=${locale}`, { next: { revalidate: 120 } }),
-      fetch(`${api}/doctors?locale=${locale}`, { next: { revalidate: 120 } }),
+      contentFetch(`${api}/departments?locale=${locale}`, { next: { revalidate: 120 } }),
+      contentFetch(`${api}/doctors?locale=${locale}`, { next: { revalidate: 120 } }),
     ])
     if (!deptRes.ok || !docRes.ok) return empty
     const [depts, docs] = await Promise.all([deptRes.json(), docRes.json()])

@@ -95,7 +95,7 @@ export function SiteHeader({ locale, t }: Props) {
       <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4">
           {/* Logo */}
-          <Link href={homeHref} className="flex items-center" aria-label={t.siteName}>
+          <Link prefetch={true} href={homeHref} className="flex items-center" aria-label={t.siteName}>
             <Image
               src="/abc-logo.webp"
               alt={t.siteName}

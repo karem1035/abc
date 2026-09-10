@@ -152,7 +152,7 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
             <div className="contact-form-title"><span className="contact-eyebrow">{locale === 'ar' ? 'اكتب لنا' : 'SEND A MESSAGE'}</span><h2>{t.contact.formTitle}</h2><p>{locale === 'ar' ? 'الحقول المميزة بالنقطة مطلوبة.' : 'Fields marked with a dot are required.'}</p></div>
 
             {/* Name */}
-            <div className="space-y-1.5">
+            <div className="contact-message-field space-y-1.5">
               <label htmlFor="contact-name" className="text-sm font-semibold">
                 {t.contact.name}
                 <RequiredDot />

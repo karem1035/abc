@@ -64,6 +64,12 @@ contentRouter.openapi(partnersListRoute, async (c) => {
   })
 })
 
+// Public slug index for static generation; drafts are never exposed.
+contentRouter.get('/pages', async (c) => {
+  const data = await db.select({ slug: pages.slug }).from(pages).where(eq(pages.isPublished, true))
+  return c.json({ data })
+})
+
 /* ------------------------------- public: pages --------------------------------- */
 
 const pageRoute = createRoute({

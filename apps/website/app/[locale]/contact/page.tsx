@@ -1,3 +1,4 @@
+import { contentFetch } from '@/lib/content-fetch'
 import type { Metadata } from 'next'
 import { ArrowUpRight, MapPin, Phone, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -18,7 +19,7 @@ export async function generateMetadata(props: {
 async function getFaqs(locale: Locale): Promise<FaqItem[]> {
   const api = process.env.API_URL ?? 'http://localhost:3000/v1'
   try {
-    const res = await fetch(`${api}/contact/faqs?page=contact&locale=${locale}`, {
+    const res = await contentFetch(`${api}/contact/faqs?page=contact&locale=${locale}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
