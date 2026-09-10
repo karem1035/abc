@@ -495,3 +495,28 @@ a.hospital-specialty:hover { text-decoration:underline; }
 @media(max-width:800px) { .post-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .insurance-help { align-items:flex-start;flex-direction:column; } .post-toolbar { align-items:flex-start;flex-direction:column; } }
 @media(max-width:540px) { .post-grid { grid-template-columns:1fr; } .insurance-partners { grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; } .insurance-partner { padding:15px; } .insurance-partner h2 { font-size:16px; } .insurance-note { padding:20px; } .insurance-help { padding:23px; } .insurance-help h2 { font-size:23px; } .post-reading { padding-inline:18px; } .post-standfirst { font-size:18px; } .post-comment-form { padding:18px; } .latest-posts { padding-block:35px; } }
 @media(prefers-reduced-motion:reduce) { .post-cover img { transition:none; } .post-card:hover .post-cover img { transform:none; } }
+
+/* News rows — compact date-forward cards, distinct from article cards */
+.news-list { display: grid; gap: 14px; }
+.news-card { display: flex; align-items: center; gap: 22px; border: 1px solid #e8dece; border-radius: 7px; background: white; padding: 20px 22px; transition: border-color .2s, box-shadow .2s; }
+.news-card:hover { border-color: #d4ae6e; box-shadow: 0 10px 26px #8a6c3310; }
+.news-card-date { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 64px; shrink: 0; border-radius: 7px; background: linear-gradient(135deg, #f6ecdc, #ead2a6); color: #8a6c33; padding: 6px; text-align: center; }
+.news-card-date strong { font-size: 22px; line-height: 1.1; }
+.news-card-date span { font-size: 11px; font-weight: 700; }
+.news-card-copy { flex: 1; min-width: 0; }
+.news-card-copy h3 { font-size: 19px; line-height: 1.55; font-weight: 700; overflow-wrap: anywhere; }
+.news-card-copy .post-excerpt { margin-top: 6px; -webkit-line-clamp: 2; }
+.news-card-arrow { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: #8a6c33; border: 1px solid #eadfc8; transition: background .2s, color .2s; shrink: 0; }
+.news-card:hover .news-card-arrow { background: #8a6c33; color: white; border-color: #8a6c33; }
+.latest-news { padding-top: 0; }
+
+/* Blog category filter chips */
+.post-category-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+.post-category-chips a { min-height: 38px; display: inline-flex; align-items: center; border: 1px solid #e3d6be; border-radius: 999px; padding: 7px 16px; background: white; font-size: 13px; font-weight: 600; color: inherit; transition: border-color .15s, background .15s; }
+.post-category-chips a:hover { border-color: #c9a86a; }
+.post-category-chips a[aria-current=page] { background: #8a6c33; border-color: #8a6c33; color: white; }
+
+@media(max-width:540px) {
+  .news-card { flex-wrap: wrap; gap: 14px; }
+  .news-card-copy { flex-basis: calc(100% - 86px); }
+}
