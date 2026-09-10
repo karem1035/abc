@@ -46,6 +46,17 @@ const dictionaries = {
       rights: 'جميع الحقوق محفوظة',
       whatsapp: 'تواصل عبر واتساب',
     },
+    insurance: {
+      title: 'التعاقدات',
+      description: 'نتعامل مع معظم شركات التأمين والجهات الكبرى — تواصل معنا لمعرفة تفاصيل اتفاقيتكم.',
+      categories: { insurance: 'شركات التأمين', company: 'شركات', authority: 'جهات حكومية' },
+      contact: 'للاستفسار عن تعاقد جديد',
+    },
+    notFound: {
+      title: 'الصفحة غير موجودة',
+      description: 'يبدو أن الرابط غير صحيح أو أن الصفحة تم نقلها.',
+      home: 'العودة للرئيسية',
+    },
     departments: {
       title: 'الأقسام الطبية',
       description: 'تخصصات طبية متكاملة نخ بها نخبة من الأطباء الاستشاريين وأحدث التقنيات.',
@@ -120,6 +131,17 @@ const dictionaries = {
       hotline: 'Hotline',
       rights: 'All rights reserved',
       whatsapp: 'Chat on WhatsApp',
+    },
+    insurance: {
+      title: 'Insurance & Agreements',
+      description: 'We work with most major insurance companies and organizations — contact us for your agreement details.',
+      categories: { insurance: 'Insurance companies', company: 'Companies', authority: 'Authorities' },
+      contact: 'For new agreements',
+    },
+    notFound: {
+      title: 'Page not found',
+      description: 'The link seems incorrect, or the page has moved.',
+      home: 'Back to home',
     },
     departments: {
       title: 'Medical Departments',

@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from './db/client'
-import { departments, doctorSchedules, doctors, faqs, users } from './db/schema'
+import { departments, doctorSchedules, doctors, faqs, insurancePartners, pages, users } from './db/schema'
 import { env, type UserRole } from './env'
 
 type SeedUser = {
@@ -48,6 +48,7 @@ async function main() {
   await seedFaqData()
   await seedDepartmentsData()
   await seedScheduleData()
+  await seedContentData()
   console.log('seed complete')
   process.exit(0)
 }
@@ -261,5 +262,52 @@ async function seedScheduleData() {
     const doc = docs.find((d) => d.slug === slug)
     if (!doc || doc.contentAr) continue
     await db.update(doctors).set({ contentAr: content.ar, contentEn: content.en }).where(eq(doctors.id, doc.id))
+  }
+}
+
+const seedPartners: Array<{ nameAr: string; nameEn: string; category: 'insurance' | 'company' | 'authority'; sortOrder: number }> = [
+  { nameAr: 'مصر للتأمين', nameEn: 'Misr Insurance', category: 'insurance', sortOrder: 1 },
+  { nameAr: 'الأهلية للتأمين', nameEn: 'Bupa Egypt', category: 'insurance', sortOrder: 2 },
+  { nameAr: 'ميت لايف', nameEn: 'MetLife', category: 'insurance', sortOrder: 3 },
+  { nameAr: 'أليانز', nameEn: 'Allianz', category: 'insurance', sortOrder: 4 },
+  { nameAr: 'شركة النصر', nameEn: 'Nasr Company', category: 'company', sortOrder: 5 },
+]
+
+const seedPages: Array<{
+  slug: string; titleAr: string; titleEn: string; contentAr: string; contentEn: string
+}> = [
+  {
+    slug: 'privacy',
+    titleAr: 'سياسة الخصوصية',
+    titleEn: 'Privacy Policy',
+    contentAr: '<p>نحن في مستشفى ABC نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. تُستخدم البيانات المرسلة عبر نماذج الموقع (كالاسم ورقم الهاتف) لغرض التواصل بشأن طلبك فقط ولا تُشارك مع أي طرف ثالث دون إذنك.</p><h3>حقوقك</h3><p>يمكنك طلب الاطلاع على بياناتك أو حذفها في أي وقت عبر التواصل معنا.</p>',
+    contentEn: '<p>At ABC Hospital we respect your privacy and protect your personal data. Details submitted through this website (such as your name and phone number) are used solely to contact you about your request and are never shared with third parties without your consent.</p><h3>Your rights</h3><p>You may request to view or delete your data at any time by contacting us.</p>',
+  },
+  {
+    slug: 'appointment-policy',
+    titleAr: 'سياسة طلب المواعيد',
+    titleEn: 'Appointment Request Policy',
+    contentAr: '<p>تقديم طلب موعد عبر الموقع ليس حجزًا مؤكدًا ولا قناة للطوارئ. يتواصل فريقنا معك هاتفيًا لتأكيد الموعد النهائي. في حالات الطوارئ يرجى التوجه فورًا إلى قسم الطوارئ أو الاتصال بالخط الساخن.</p>',
+    contentEn: '<p>Submitting an appointment request through this website is not a confirmed booking and is not an emergency channel. Our team will call you to confirm the final appointment. In emergencies, please go directly to the emergency department or call the hotline.</p>',
+  },
+]
+
+async function seedContentData() {
+  console.log('seeding insurance partners...')
+  for (const p of seedPartners) {
+    const existing = await db.select({ id: insurancePartners.id }).from(insurancePartners).where(eq(insurancePartners.nameAr, p.nameAr)).limit(1).then((r) => r[0] ?? null)
+    if (!existing) {
+      await db.insert(insurancePartners).values(p)
+      console.log(`created partner: ${p.nameAr}`)
+    }
+  }
+
+  console.log('seeding policy pages...')
+  for (const pg of seedPages) {
+    const existing = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, pg.slug)).limit(1).then((r) => r[0] ?? null)
+    if (!existing) {
+      await db.insert(pages).values(pg)
+      console.log(`created page: ${pg.slug}`)
+    }
   }
 }

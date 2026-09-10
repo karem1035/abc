@@ -43,6 +43,13 @@
       "when": 1789053631480,
       "tag": "0005_unique_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789056675212,
+      "tag": "0006_worried_whistler",
+      "breakpoints": true
     }
   ]
 }

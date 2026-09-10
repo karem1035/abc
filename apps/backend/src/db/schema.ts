@@ -195,3 +195,37 @@ export const doctorSchedules = pgTable(
 
 export type DoctorSchedule = typeof doctorSchedules.$inferSelect
 export type NewDoctorSchedule = typeof doctorSchedules.$inferInsert
+
+export const insurancePartners = pgTable(
+  'insurance_partners',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    nameAr: text('name_ar').notNull(),
+    nameEn: text('name_en').notNull(),
+    category: text('category').default('insurance').notNull(), // insurance | company | authority
+    logoUrl: text('logo_url'),
+    websiteUrl: text('website_url'),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('insurance_partners_sort_idx').on(table.sortOrder)],
+)
+
+export type InsurancePartner = typeof insurancePartners.$inferSelect
+export type NewInsurancePartner = typeof insurancePartners.$inferInsert
+
+export const pages = pgTable('pages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: text('slug').notNull().unique(), // e.g. privacy, appointment-policy
+  titleAr: text('title_ar').notNull(),
+  titleEn: text('title_en').notNull(),
+  contentAr: text('content_ar'), // rich HTML from the TipTap editor
+  contentEn: text('content_en'),
+  isPublished: boolean('is_published').default(true).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export type Page = typeof pages.$inferSelect
+export type NewPage = typeof pages.$inferInsert

@@ -13,6 +13,8 @@ import { DepartmentEditPage } from '@/pages/department-edit'
 import { DepartmentsPage } from '@/pages/departments'
 import { DoctorsPage } from '@/pages/doctors'
 import { DoctorEditPage } from '@/pages/doctor-edit'
+import { PartnersPage } from '@/pages/partners'
+import { CmsPagesPage } from '@/pages/cms-pages'
 import { useAuth, type UserRole } from '@/lib/auth'
 import { Loader2 } from 'lucide-react'
 
@@ -71,6 +73,8 @@ export default function App() {
           element={<PlaceholderPage title="Content" />}
         />
         <Route path="faqs" element={<FaqsPage />} />
+        <Route path="partners" element={<PartnersPage />} />
+        <Route path="pages" element={<CmsPagesPage />} />
         <Route path="departments" element={<DepartmentsPage />} />
         <Route path="departments/new" element={<DepartmentEditPage />} />
         <Route path="departments/:id/edit" element={<DepartmentEditPage />} />

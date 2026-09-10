@@ -23,14 +23,17 @@ const socials = [
 
 export function SiteFooter({ locale, t }: { locale: Locale; t: Dictionary }) {
   const homeHref = `/${locale}`
+  const ar_ = locale === 'ar'
   const year = new Date().getFullYear()
 
   const links = [
     { href: homeHref, label: t.nav.home },
     { href: `${homeHref}/departments`, label: t.nav.departments },
     { href: `${homeHref}/doctors`, label: t.nav.doctors },
-    { href: `${homeHref}/news`, label: t.nav.news },
+    { href: `${homeHref}/insurance`, label: t.insurance.title },
     { href: `${homeHref}/contact`, label: t.nav.contact },
+    { href: `${homeHref}/privacy`, label: ar_ ? 'سياسة الخصوصية' : 'Privacy' },
+    { href: `${homeHref}/appointment-policy`, label: ar_ ? 'سياسة المواعيد' : 'Appointment policy' },
   ]
 
   return (
