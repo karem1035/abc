@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from './db/client'
-import { departments, doctorSchedules, doctors, faqs, insurancePartners, pages, users } from './db/schema'
+import { departments, doctorSchedules, doctors, faqs, insurancePartners, pages, posts, users } from './db/schema'
 import { env, type UserRole } from './env'
 
 type SeedUser = {
@@ -49,6 +49,7 @@ async function main() {
   await seedDepartmentsData()
   await seedScheduleData()
   await seedContentData()
+  await seedPostsData()
   console.log('seed complete')
   process.exit(0)
 }
@@ -308,6 +309,61 @@ async function seedContentData() {
     if (!existing) {
       await db.insert(pages).values(pg)
       console.log(`created page: ${pg.slug}`)
+    }
+  }
+}
+
+const seedPosts: Array<{
+  slug: string; type: 'article' | 'news'; titleAr: string; titleEn: string
+  excerptAr: string; excerptEn: string; contentAr: string; contentEn: string
+  categoryAr: string; categoryEn: string; coverUrl: string; status: 'published'
+}> = [
+  {
+    slug: 'heart-health-tips', type: 'article',
+    titleAr: '٧ عادات يومية لصحة قلب أفضل', titleEn: '7 daily habits for a healthier heart',
+    excerptAr: 'تغييرات بسيطة في نمط الحياة تحمي قلبك وشرايينك على المدى الطويل.',
+    excerptEn: 'Small lifestyle changes that protect your heart and arteries long-term.',
+    contentAr: '<h2>قلبك يستحق العناية</h2><p>أمراض القلب من أكثر الأسباب شيوعًا للمشكلات الصحية، لكن الخطر يمكن تقليله بشكل كبير بعادات يومية بسيطة.</p><ul><li>المشي ٣٠ دقيقة يوميًا</li><li>تقليل الملح والسكريات</li><li>النوم الجيد والانتظام</li><li>الإقلاع عن التدخين</li></ul>',
+    contentEn: '<h2>Your heart deserves care</h2><p>Heart disease is among the most common health risks, yet it can be greatly reduced with simple daily habits.</p><ul><li>Walk 30 minutes daily</li><li>Reduce salt and sugar</li><li>Consistent, quality sleep</li><li>Quit smoking</li></ul>',
+    categoryAr: 'صحة القلب', categoryEn: 'Heart health',
+    coverUrl: 'https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=1200&q=80&auto=format&fit=crop',
+    status: 'published',
+  },
+  {
+    slug: 'abc-new-cath-lab', type: 'news',
+    titleAr: 'افتتاح قسطرة القلب الجديدة بالمستشفى', titleEn: 'ABC opens its new cardiac catheterization lab',
+    excerptAr: 'معمل قسطرة حديث بأحدث الأجهزة يخدم حالات القلب الحرجة.',
+    excerptEn: 'A modern cath lab with the latest equipment serving critical cardiac cases.',
+    contentAr: '<h2>خطوة جديدة في رعاية القلب</h2><p>افتتح مستشفى ABC معمل قسطرة القلب الجديد، المجهز بأحدث أجهزة التصوير والتدخل الجراحي، لخدمة حالات الجلطات الحادة والحالات المزمنة.</p>',
+    contentEn: '<h2>A new step in cardiac care</h2><p>ABC Hospital has opened its new cardiac catheterization lab, equipped with the latest imaging and intervention systems for acute and chronic cases.</p>',
+    categoryAr: 'أخبار المستشفى', categoryEn: 'Hospital news',
+    coverUrl: 'https://images.unsplash.com/photo-1579154204601-289744fdbb8e?w=1200&q=80&auto=format&fit=crop',
+    status: 'published',
+  },
+  {
+    slug: 'managing-diabetes', type: 'article',
+    titleAr: 'دليلك للتعامل مع السكري', titleEn: 'Your guide to managing diabetes',
+    excerptAr: 'نصائح عملية للمتابعة والغذاء والدواء لمرضى السكري من النوع الثاني.',
+    excerptEn: 'Practical monitoring, nutrition, and medication tips for type 2 diabetes.',
+    contentAr: '<h2>السكري ليس نهاية الطريق</h2><p>بال متابعة منتظمة ونظام غذائي متوازن يمكن لمريض السكري أن يحيا حياة كاملة ونشطة.</p><p>تابع سكر الدم بانتظام، والتزم بجرعات الدواء، ومارس النشاط البدني باعتدال.</p>',
+    contentEn: '<h2>Diabetes is not the end of the road</h2><p>With regular monitoring and a balanced diet, people with diabetes can live full, active lives.</p><p>Track blood sugar regularly, stick to your medication, and stay moderately active.</p>',
+    categoryAr: 'الباطنة', categoryEn: 'Internal medicine',
+    coverUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80&auto=format&fit=crop',
+    status: 'published',
+  },
+]
+
+async function seedPostsData() {
+  console.log('seeding posts...')
+  for (const post of seedPosts) {
+    const existing = await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, post.slug)).limit(1).then((r) => r[0] ?? null)
+    const values = { ...post, authorAr: 'فريق مستشفى ABC', authorEn: 'ABC Team', publishedAt: new Date(), commentsEnabled: true }
+    if (existing) {
+      await db.update(posts).set(values).where(eq(posts.id, existing.id))
+      console.log(`updated post: ${post.slug}`)
+    } else {
+      await db.insert(posts).values(values)
+      console.log(`created post: ${post.slug}`)
     }
   }
 }

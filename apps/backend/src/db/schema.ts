@@ -231,3 +231,39 @@ export const pages = pgTable('pages', {
 
 export type Page = typeof pages.$inferSelect
 export type NewPage = typeof pages.$inferInsert
+
+export const posts = pgTable('posts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: text('slug').notNull().unique(),
+  type: text('type').notNull().default('article'),
+  titleAr: text('title_ar').notNull(),
+  titleEn: text('title_en').notNull(),
+  excerptAr: text('excerpt_ar').notNull().default(''),
+  excerptEn: text('excerpt_en').notNull().default(''),
+  contentAr: text('content_ar').notNull().default(''),
+  contentEn: text('content_en').notNull().default(''),
+  categoryAr: text('category_ar').notNull().default(''),
+  categoryEn: text('category_en').notNull().default(''),
+  authorAr: text('author_ar').notNull().default(''),
+  authorEn: text('author_en').notNull().default(''),
+  seoTitleAr: text('seo_title_ar').notNull().default(''),
+  seoTitleEn: text('seo_title_en').notNull().default(''),
+  seoDescriptionAr: text('seo_description_ar').notNull().default(''),
+  seoDescriptionEn: text('seo_description_en').notNull().default(''),
+  coverUrl: text('cover_url'),
+  status: text('status').notNull().default('draft'),
+  commentsEnabled: boolean('comments_enabled').notNull().default(true),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [index('posts_publication_idx').on(table.status, table.type, table.publishedAt)])
+
+export const postComments = pgTable('post_comments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  postId: uuid('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  body: text('body').notNull(),
+  locale: text('locale').notNull().default('ar'),
+  status: text('status').notNull().default('pending'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [index('post_comments_post_status_idx').on(table.postId, table.status)])

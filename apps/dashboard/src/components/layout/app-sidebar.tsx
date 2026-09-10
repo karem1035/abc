@@ -37,7 +37,7 @@ const navMain: NavItem[] = [
   { to: '/users', labelKey: 'nav.users', icon: Users, roles: ['admin'] },
   { to: '/audit-logs', labelKey: 'nav.auditLogs', icon: ScrollText, roles: ['admin'] },
   { to: '/bookings', labelKey: 'nav.bookings', icon: Stethoscope },
-  { to: '/content', labelKey: 'nav.content', icon: Newspaper },
+  { to: '/content', labelKey: 'nav.content', icon: Newspaper, roles: ['admin', 'marketer'] },
   { to: '/departments', labelKey: 'nav.departments', icon: Building2 },
   { to: '/doctors', labelKey: 'nav.doctorsPage', icon: Stethoscope },
   { to: '/faqs', labelKey: 'nav.faqs', icon: CircleHelp },

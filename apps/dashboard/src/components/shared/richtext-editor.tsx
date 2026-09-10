@@ -12,6 +12,7 @@ type Props = {
   onChange: (html: string) => void
   dir?: 'rtl' | 'ltr'
   placeholder?: string
+  readOnly?: boolean
 }
 
 const btn =
@@ -21,15 +22,16 @@ const btn =
  * Lightweight TipTap rich-text editor storing HTML.
  * Used for bilingual department/service content.
  */
-export function RichTextEditor({ value, onChange, dir = 'ltr', placeholder }: Props) {
+export function RichTextEditor({ value, onChange, dir = 'ltr', placeholder, readOnly = false }: Props) {
   const editor = useEditor({
     extensions: [StarterKit],
+    editable: !readOnly,
     content: value || '',
     immediatelyRender: false,
     editorProps: {
       attributes: {
         dir,
-        class: 'prose-tiptap min-h-32 rounded-b-lg border-t border-border px-3 py-2.5 text-sm leading-relaxed outline-none',
+        class: 'prose-tiptap min-h-64 rounded-b-lg border-t border-border px-3 py-2.5 text-sm leading-relaxed outline-none',
         'data-placeholder': placeholder ?? '',
       },
     },
@@ -54,7 +56,7 @@ export function RichTextEditor({ value, onChange, dir = 'ltr', placeholder }: Pr
 
   return (
     <div className="overflow-hidden rounded-lg border border-border">
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 p-1">
+      {!readOnly && <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 p-1">
         <button type="button" className={btn} onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} aria-label="Bold"><Bold className="h-4 w-4" /></button>
         <button type="button" className={btn} onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} aria-label="Italic"><Italic className="h-4 w-4" /></button>
         <button type="button" className={btn} onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} aria-label="Strikethrough"><Strikethrough className="h-4 w-4" /></button>
@@ -72,7 +74,7 @@ export function RichTextEditor({ value, onChange, dir = 'ltr', placeholder }: Pr
           <button type="button" className={btn} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()} aria-label="Undo"><Undo2 className="h-4 w-4" /></button>
           <button type="button" className={btn} onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()} aria-label="Redo"><Redo2 className="h-4 w-4" /></button>
         </span>
-      </div>
+      </div>}
       <EditorContent editor={editor} />
     </div>
   )

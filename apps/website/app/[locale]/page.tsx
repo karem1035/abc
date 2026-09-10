@@ -1,3 +1,4 @@
+import { LatestPosts } from './components/posts/post-cards'
 import { HomeHero } from './components/home-hero'
 
 export default async function HomePage({
@@ -6,5 +7,5 @@ export default async function HomePage({
   params: Promise<{ locale: 'ar' | 'en' }>
 }) {
   const { locale } = await params
-  return <HomeHero locale={locale} />
+  return <><HomeHero locale={locale} /><LatestPosts locale={locale} /></>
 }

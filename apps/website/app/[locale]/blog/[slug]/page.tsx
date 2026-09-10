@@ -1,0 +1,5 @@
+import type { Locale } from '@/lib/i18n'
+import { PostDetail, postMetadata } from '../../components/posts/post-detail'
+type Props={params:Promise<{locale:Locale;slug:string}>}
+export async function generateMetadata({params}:Props) {const {locale,slug}=await params;return postMetadata(slug,locale,'article')}
+export default async function Page({params}:Props) {const {locale,slug}=await params;return <PostDetail locale={locale} slug={slug} type="article"/>}

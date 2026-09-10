@@ -12,6 +12,7 @@ import departments from './departments/routes'
 import doctors from './doctors/routes'
 import bookings from './bookings/routes'
 import content from './content/routes'
+import posts from './posts/routes'
 
 export const app = new OpenAPIHono()
 
@@ -32,6 +33,7 @@ app.route('/departments', departments)
 app.route('/doctors', doctors)
 app.route('/bookings', bookings)
 app.route('/content', content)
+app.route('/posts', posts)
 
 export const openApiDocument = {
   openapi: '3.1.0',
