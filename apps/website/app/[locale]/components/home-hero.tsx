@@ -14,19 +14,18 @@ const slides = [
   'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=2000&q=80',
   'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=2000&q=80',
 ]
-const departments = [
-  { id: 'cardiology', en: 'Cardiology', ar: 'القلب والأوعية الدموية' },
-  { id: 'orthopedics', en: 'Orthopedics', ar: 'العظام' },
-  { id: 'internal', en: 'Internal medicine', ar: 'الباطنة' },
-]
 
-export function HomeHero({ locale }: { locale: Locale }) {
+type DeptOption = { slug: string; name: string }
+type DoctorOption = { slug: string; name: string; departmentSlug: string | null }
+
+export function HomeHero({ locale, departments = [], doctors = [] }: { locale: Locale; departments?: DeptOption[]; doctors?: DoctorOption[] }) {
   const ar = locale === 'ar'
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(true)
   const [mobile, setMobile] = useState(true)
   const [department, setDepartment] = useState('')
+  const [doctor, setDoctor] = useState('')
   const [country, setCountry] = useState<CountryCode>('EG')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -82,12 +81,14 @@ export function HomeHero({ locale }: { locale: Locale }) {
           patientName: name.trim(),
           phone: parsed?.number ?? phone,
           departmentSlug: department || undefined,
+          doctorSlug: doctor || undefined,
         }),
       })
       if (!res.ok) throw new Error('request failed')
       setSent(true)
       setName('')
       setPhone('')
+      setDoctor('')
     } catch {
       setServerError(true)
     } finally {
@@ -126,8 +127,8 @@ export function HomeHero({ locale }: { locale: Locale }) {
           <p className="hero-booking-intro">{ar ? 'اترك بياناتك وسنتواصل معك لتأكيد الموعد.' : 'Leave your details. We’ll call to confirm your appointment.'}</p>
           <form onSubmit={submit} className="hero-booking-form">
             <div className="hero-booking-fields">
-              <div className="hero-field"><label htmlFor="hero-department">{ar ? 'التخصص' : 'Department'}</label><Select value={department || 'any'} onValueChange={(value) => setDepartment(value === 'any' ? '' : value)} dir={ar ? 'rtl' : 'ltr'}><SelectTrigger id="hero-department" className="hero-select"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">{ar ? 'ساعدني في الاختيار' : 'Help me choose'}</SelectItem>{departments.map((item) => <SelectItem value={item.id} key={item.id}>{item[locale]}</SelectItem>)}</SelectContent></Select></div>
-              <div className="hero-field"><label htmlFor="hero-doctor">{ar ? 'الطبيب' : 'Doctor'}</label><Select value="any" disabled={!department} dir={ar ? 'rtl' : 'ltr'}><SelectTrigger id="hero-doctor" className="hero-select"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">{ar ? 'أي طبيب مناسب' : 'Any suitable doctor'}</SelectItem></SelectContent></Select></div>
+              <div className="hero-field"><label htmlFor="hero-department">{ar ? 'التخصص' : 'Department'}</label><Select value={department || 'any'} onValueChange={(value) => { setDepartment(value === 'any' ? '' : value); setDoctor('') }} dir={ar ? 'rtl' : 'ltr'}><SelectTrigger id="hero-department" className="hero-select"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">{ar ? 'ساعدني في الاختيار' : 'Help me choose'}</SelectItem>{departments.map((item) => <SelectItem value={item.slug} key={item.slug}>{item.name}</SelectItem>)}</SelectContent></Select></div>
+              <div className="hero-field"><label htmlFor="hero-doctor">{ar ? 'الطبيب' : 'Doctor'}</label><Select value={doctor || 'any'} onValueChange={(value) => setDoctor(value === 'any' ? '' : value)} disabled={!department} dir={ar ? 'rtl' : 'ltr'}><SelectTrigger id="hero-doctor" className="hero-select"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">{ar ? 'أي طبيب مناسب' : 'Any suitable doctor'}</SelectItem>{doctors.filter((d) => d.departmentSlug === department).map((d) => <SelectItem value={d.slug} key={d.slug}>{d.name}</SelectItem>)}</SelectContent></Select></div>
               <label htmlFor="hero-name">{ar ? 'الاسم' : 'Your name'} <span aria-hidden="true">*</span><input id="hero-name" name="name" autoComplete="name" required maxLength={100} placeholder={ar ? 'اسمك بالكامل' : 'Full name'} value={name} onChange={(e) => setName(e.target.value)} /></label>
               <div className="hero-phone-field"><label htmlFor="hero-phone">{ar ? 'رقم الموبايل' : 'Mobile number'} <span aria-hidden="true">*</span></label><PhoneInput id="hero-phone" locale={locale} country={country} onCountryChange={setCountry} value={phone} onChange={setPhone} invalid={phoneError} required />{phoneError && <p role="alert" className="mt-2 text-xs text-destructive">{ar ? 'أدخل رقم هاتف صحيح.' : 'Enter a valid phone number.'}</p>}</div>
             </div>
