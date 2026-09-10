@@ -5,7 +5,7 @@ export type PostsPage = {data:Post[];total:number;page:number;limit:number}
 const api=process.env.API_URL??'http://localhost:3000/v1'
 export async function getPosts(locale:Locale, options:{type?:string;q?:string;page?:number;limit?:number;category?:string}={}):Promise<PostsPage> {
  const query=new URLSearchParams({locale,...Object.fromEntries(Object.entries(options).filter(([,v])=>v!==undefined).map(([k,v])=>[k,String(v)]))})
- const response=await fetch(`${api}/posts/?${query}`,{cache:'no-store'})
+ const response=await fetch(`${api}/posts?${query}`,{cache:'no-store'})
  if(!response.ok)throw new Error('Could not load posts')
  return response.json()
 }
