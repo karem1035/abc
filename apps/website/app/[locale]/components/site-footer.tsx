@@ -32,6 +32,8 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dictionary }) {
     { href: `${homeHref}/doctors`, label: t.nav.doctors },
     { href: `${homeHref}/insurance`, label: t.insurance.title },
     { href: `${homeHref}/contact`, label: t.nav.contact },
+    { href: `${homeHref}/b-home`, label: ar_ ? 'B-Home — الرعاية المنزلية' : 'B-Home' },
+    { href: `${homeHref}/b-lite`, label: ar_ ? 'B-Lite — الغذاء الصحي' : 'B-Lite' },
     { href: `${homeHref}/privacy`, label: ar_ ? 'سياسة الخصوصية' : 'Privacy' },
     { href: `${homeHref}/appointment-policy`, label: ar_ ? 'سياسة المواعيد' : 'Appointment policy' },
   ]

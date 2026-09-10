@@ -274,6 +274,25 @@ const seedPartners: Array<{ nameAr: string; nameEn: string; category: 'insurance
   { nameAr: 'شركة النصر', nameEn: 'Nasr Company', category: 'company', sortOrder: 5 },
 ]
 
+const programPages: Array<{
+  slug: string; titleAr: string; titleEn: string; contentAr: string; contentEn: string
+}> = [
+  {
+    slug: 'b-home',
+    titleAr: 'B-HOME — الرعاية المنزلية',
+    titleEn: 'B-HOME — Home Care',
+    contentAr: '<h2>B-Home.. الرعاية في بيتك</h2><p>برنامج B-Home من مستشفى ABC يختصر المسافة بين المرضى وخدمات التمريض عالية الجودة، عبر أسطول متنامٍ من طاقم تمريض متخصص ومرخّص ومدرب بعناية لخدمة مرضانا في القاهرة والجيزة، بإشراف مباشر من إدارة مستشفى ABC.</p><h3>لماذا B-Home؟</h3><ul><li>تشكيلة واسعة من الخدمات بإدارة مستشفى ABC</li><li>سرعة وموثوقية وجودة عالية</li><li>طاقم تمريض مدرب من الجنسين بثلاث درجات (أخصائي، فني، مساعد)</li><li>طلب فوري أو جدولة موعد لاحق</li><li>أسعار تنافسية بأفضل جودة</li></ul><h3>خدماتنا</h3><ul><li><strong>خدمات سريعة:</strong> الحقن وتركيب الكانيولا بواسطة ممرض متخصص.</li><li><strong>رعاية المسنين:</strong> رعاية شخصية وعلاجية ونفسية ودعم الأنشطة اليومية.</li><li><strong>الإقامة المنزلية:</strong> رعاية علاجية وشخصية حتى ٢٤ ساعة للحالات بعد الجراحة واحتياجات خاصة.</li><li><strong>العناية بالجروح:</strong> القدم السكري وقروح الفراش والجروح بعد الجراحة.</li><li><strong>رعاية الأوبئة:</strong> تجهيز عزل منزلي كامل مع اشتراطات مكافحة العدوى.</li><li><strong>زيارات الأطباء:</strong> أطباء بكل التخصصات للزيارات المنزلية على مدار الساعة.</li><li><strong>الإسعاف:</strong> نقل المريض إلى المستشفى عند الحاجة.</li></ul>',
+    contentEn: '<h2>B-Home — care at your doorstep</h2><p>B-Home is a program powered by ABC Hospital that cuts the distance between patients and high-quality nursing services. It provides on-demand a growing fleet of specialized, licensed, and specially trained nursing staff serving patients all over Cairo and Giza, under the supervision of ABC Hospital management.</p><h3>Why B-Home?</h3><ul><li>Wide range of services, powered and managed by ABC Hospital</li><li>Reliable, quick, and of high quality</li><li>Highly-trained nurses of both genders</li><li>Three nursing levels: specialist, technician, and aide</li><li>Request immediately or schedule for later</li><li>Competitive prices with the best quality level</li></ul><h3>Our services</h3><ul><li><strong>Quick services:</strong> injections and cannula installation by a specialized nurse.</li><li><strong>Elderly care:</strong> personal, therapeutic, hygiene, and psychological care supporting daily activities.</li><li><strong>Home shift:</strong> therapeutic or personal care up to 24 hrs for post-surgery and special needs.</li><li><strong>Wound care:</strong> diabetic foot, bedsores, and postoperative wounds.</li><li><strong>Pandemic care:</strong> complete home isolation setup with full infection-control precautions.</li><li><strong>Doctor visits:</strong> doctors in all specialties available for home visits 24/7.</li><li><strong>Ambulance:</strong> patient transfer to the hospital when indicated.</li></ul>',
+  },
+  {
+    slug: 'b-lite',
+    titleAr: 'B-LITE — النظام الغذائي الصحي',
+    titleEn: 'B-LITE — Healthy Food System',
+    contentAr: '<h2>لأننا نهتم بصحتك</h2><p>B-Lite نظام غذائي صحي بجودة ممتازة يتم إعداده تحت إشراف خبراء مستشفى ABC، ويقدم نظامًا غذائيًا متوازنًا باستخدام مكونات عالية الجودة ستغيّر نمط حياتك.</p><p>يراجع مستشار التغذية تاريخك الصحي وأطعمتك المفضلة ويحدد الكميات والسعرات المناسبة لك. تُجهّز الوجبات يوميًا حسب الطلب، وتُنتج منتجاتنا بأعلى جودة للمكونات.</p>',
+    contentEn: '<h2>Because we care about your well-being</h2><p>B-Lite is a healthy food system of excellent quality made under the supervision of ABC Hospital experts. It offers a healthy, balanced diet using high-quality ingredients that will change your lifestyle.</p><p>A nutrition consultant reviews your history and favorite foods and determines the appropriate quantities and calories. Orders are prepared daily upon request, and our meals and products are produced with the highest-quality ingredients.</p>',
+  },
+]
+
 const seedPages: Array<{
   slug: string; titleAr: string; titleEn: string; contentAr: string; contentEn: string
 }> = [
@@ -300,6 +319,15 @@ async function seedContentData() {
     if (!existing) {
       await db.insert(insurancePartners).values(p)
       console.log(`created partner: ${p.nameAr}`)
+    }
+  }
+
+  console.log('seeding program pages...')
+  for (const pg of programPages) {
+    const existing = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, pg.slug)).limit(1).then((r) => r[0] ?? null)
+    if (!existing) {
+      await db.insert(pages).values(pg)
+      console.log(`created page: ${pg.slug}`)
     }
   }
 
