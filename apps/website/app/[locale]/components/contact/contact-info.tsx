@@ -21,11 +21,11 @@ const socials = [
 /** Side column under the contact form: email, location, socials. */
 export function ContactInfo({ locale, t }: { locale: Locale; t: Dictionary }) {
   return (
-    <div className="space-y-6">
-      <h2 className="font-heading text-lg font-bold">{t.contact.info}</h2>
+    <div className="contact-details">
+
 
       {/* Email */}
-      <a href={`mailto:${site.email}`} className="flex items-center gap-3">
+      <a href={`mailto:${site.email}`} className="contact-detail-row">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-deep">
           <Mail className="size-4" />
         </span>
@@ -36,7 +36,7 @@ export function ContactInfo({ locale, t }: { locale: Locale; t: Dictionary }) {
       </a>
 
       {/* Address */}
-      <div className="flex items-center gap-3">
+      <div className="contact-detail-row">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-deep">
           <MapPin className="size-4" />
         </span>
@@ -47,7 +47,7 @@ export function ContactInfo({ locale, t }: { locale: Locale; t: Dictionary }) {
       </div>
 
       {/* Socials */}
-      <div className="flex items-center gap-1 pt-2" dir="ltr">
+      <div className="contact-socials" dir="ltr">
         {socials.map(({ href, label, Icon }) => (
           <a
             key={label}

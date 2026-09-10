@@ -46,6 +46,15 @@ const dictionaries = {
       rights: 'جميع الحقوق محفوظة',
       whatsapp: 'تواصل عبر واتساب',
     },
+    departments: {
+      title: 'الأقسام الطبية',
+      description: 'تخصصات طبية متكاملة نخ بها نخبة من الأطباء الاستشاريين وأحدث التقنيات.',
+      doctorsIn: 'أطباء القسم',
+      noDoctors: 'سيتم إضافة أطباء هذا القسم قريبًا.',
+      allDoctors: 'كل الأطباء',
+      bookNow: 'اطلب حجزًا',
+      related: 'أقسام أخرى',
+    },
     contact: {
       title: 'تواصل معنا',
       description: 'نحن هنا للإجابة على استفساراتك — أرسل رسالتك وسنعاود التواصل معك في أقرب وقت.',
@@ -111,6 +120,15 @@ const dictionaries = {
       hotline: 'Hotline',
       rights: 'All rights reserved',
       whatsapp: 'Chat on WhatsApp',
+    },
+    departments: {
+      title: 'Medical Departments',
+      description: 'Comprehensive specialties with leading consultants and the latest technology.',
+      doctorsIn: 'Department doctors',
+      noDoctors: 'Doctors for this department will be added soon.',
+      allDoctors: 'All doctors',
+      bookNow: 'Request an appointment',
+      related: 'Other departments',
     },
     contact: {
       title: 'Contact Us',

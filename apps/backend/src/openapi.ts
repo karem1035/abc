@@ -8,6 +8,8 @@ import profile from './profile/routes'
 import audit from './audit/routes'
 import storage from './storage/routes'
 import contact from './contact/routes'
+import departments from './departments/routes'
+import doctors from './doctors/routes'
 
 export const app = new OpenAPIHono()
 
@@ -24,6 +26,8 @@ app.route('/profile', profile)
 app.route('/audit-logs', audit)
 app.route('/storage', storage)
 app.route('/contact', contact)
+app.route('/departments', departments)
+app.route('/doctors', doctors)
 
 export const openApiDocument = {
   openapi: '3.1.0',

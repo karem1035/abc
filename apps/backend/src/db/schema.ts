@@ -95,3 +95,50 @@ export const faqs = pgTable(
 
 export type Faq = typeof faqs.$inferSelect
 export type NewFaq = typeof faqs.$inferInsert
+
+export const departments = pgTable(
+  'departments',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    slug: text('slug').notNull().unique(), // shared across locales: /ar/departments/{slug}
+    nameAr: text('name_ar').notNull(),
+    nameEn: text('name_en').notNull(),
+    descriptionAr: text('description_ar'), // short teaser
+    descriptionEn: text('description_en'),
+    contentAr: text('content_ar'), // rich HTML from the TipTap editor
+    contentEn: text('content_en'),
+    imageUrl: text('image_url'),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    status: text('status').default('published').notNull(), // draft | published | archived
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('departments_sort_idx').on(table.sortOrder)],
+)
+
+export type Department = typeof departments.$inferSelect
+export type NewDepartment = typeof departments.$inferInsert
+
+export const doctors = pgTable(
+  'doctors',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    slug: text('slug').notNull().unique(),
+    nameAr: text('name_ar').notNull(),
+    nameEn: text('name_en').notNull(),
+    titleAr: text('title_ar'), // e.g. استشاري أمراض القلب
+    titleEn: text('title_en'),
+    photoUrl: text('photo_url'),
+    departmentId: uuid('department_id').references(() => departments.id, {
+      onDelete: 'set null',
+    }),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    status: text('status').default('published').notNull(), // draft | published | archived
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('doctors_department_idx').on(table.departmentId)],
+)
+
+export type Doctor = typeof doctors.$inferSelect
+export type NewDoctor = typeof doctors.$inferInsert

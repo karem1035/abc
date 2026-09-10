@@ -22,6 +22,13 @@
       "when": 1788659276235,
       "tag": "0002_workable_sersi",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789051139720,
+      "tag": "0003_chemical_lightspeed",
+      "breakpoints": true
     }
   ]
 }

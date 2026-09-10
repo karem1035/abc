@@ -2,9 +2,9 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Loader2, Send } from 'lucide-react'
-import { getCountries, getCountryCallingCode, parsePhoneNumberFromString } from 'libphonenumber-js'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
 import type { CountryCode } from 'libphonenumber-js'
-import ReactSelect from 'react-select'
+import { PhoneInput } from '../ui/phone-input'
 import { useState, type FormEvent } from 'react'
 import type { Dictionary } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -39,16 +39,6 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
   const [submitting, setSubmitting] = useState(false)
   const [received, setReceived] = useState(false)
   const [serverError, setServerError] = useState(false)
-
-  // Searchable, translated country options (Egypt first)
-  const regionNames = new Intl.DisplayNames([locale], { type: 'region' })
-  const countryOptions = [
-    DEFAULT_COUNTRY,
-    ...getCountries().filter((c) => c !== DEFAULT_COUNTRY),
-  ].map((c) => ({
-    value: c,
-    label: `${String.fromCodePoint(...[...c].map((ch) => 127397 + ch.charCodeAt(0)))}  ${regionNames.of(c) ?? c}  +${getCountryCallingCode(c)}`,
-  }))
 
   function validate(): boolean {
     const next: Record<string, string> = {}
@@ -98,12 +88,12 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
 
   const inputCls = (invalid?: string) =>
     cn(
-      'h-11 w-full rounded-lg border bg-background px-3.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/30',
+      'h-12 w-full rounded-lg border bg-background px-3.5 text-base outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/30',
       invalid ? 'border-destructive' : 'border-border',
     )
 
   return (
-    <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+    <div className="contact-form-card">
       <AnimatePresence mode="wait" initial={false}>
         {received ? (
           <motion.div
@@ -157,9 +147,9 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
             transition={{ duration: 0.3 }}
             onSubmit={onSubmit}
             noValidate
-            className="space-y-4"
+            className="contact-form-layout"
           >
-            <h2 className="font-heading text-xl font-bold">{t.contact.formTitle}</h2>
+            <div className="contact-form-title"><span className="contact-eyebrow">{locale === 'ar' ? 'اكتب لنا' : 'SEND A MESSAGE'}</span><h2>{t.contact.formTitle}</h2><p>{locale === 'ar' ? 'الحقول المميزة بالنقطة مطلوبة.' : 'Fields marked with a dot are required.'}</p></div>
 
             {/* Name */}
             <div className="space-y-1.5">
@@ -183,59 +173,7 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
                 {t.contact.phone}
                 <RequiredDot />
               </label>
-              <div className="flex gap-0" dir="ltr">
-                <div className={cn('w-44 shrink-0', errors.phone && '[&_.select__control]:border-destructive')}>
-                  <ReactSelect
-                    inputId="contact-country"
-                    classNamePrefix="select"
-                    value={countryOptions.find((o) => o.value === country)}
-                    onChange={(opt) => opt && setCountry(opt.value as CountryCode)}
-                    options={countryOptions}
-                    isSearchable
-                    menuPlacement="auto"
-                    menuShouldScrollIntoView={false}
-                    placeholder={locale === 'ar' ? 'ابحث عن دولة…' : 'Search country…'}
-                    noOptionsMessage={() => (locale === 'ar' ? 'لا توجد نتائج' : 'No results')}
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        minHeight: '2.75rem',
-                        height: '2.75rem',
-                        borderRadius: '0.5rem 0 0 0.5rem',
-                        borderRight: 'none',
-                        borderColor: errors.phone ? 'var(--destructive)' : 'var(--border)',
-                        boxShadow: state.isFocused ? '0 0 0 2px color-mix(in srgb, var(--brand) 30%, transparent)' : 'none',
-                        '&:hover': { borderColor: errors.phone ? 'var(--destructive)' : 'var(--border)' },
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                      }),
-                      input: (base) => ({ ...base, minWidth: '5rem' }),
-                      valueContainer: (base) => ({ ...base, fontSize: '0.8rem' }),
-                      menu: (base) => ({ ...base, borderRadius: '0.5rem', zIndex: 50, overflow: 'hidden' }),
-                      menuList: (base) => ({ ...base, maxHeight: '16rem' }),
-                      option: (base, state) => ({
-                        ...base,
-                        fontSize: '0.875rem',
-                        backgroundColor: state.isSelected
-                          ? 'color-mix(in srgb, var(--brand) 20%, transparent)'
-                          : state.isFocused
-                            ? 'var(--muted)'
-                            : 'transparent',
-                        color: 'inherit',
-                        cursor: 'pointer',
-                      }),
-                    }}
-                  />
-                </div>
-                <input
-                  id="contact-phone"
-                  value={national}
-                  onChange={(e) => setNational(e.target.value.replace(/[^\d\s]/g, ''))}
-                  placeholder={'10 1234 5678'}
-                  inputMode="tel"
-                  className={cn(inputCls(errors.phone), 'rounded-s-none')}
-                />
-              </div>
+              <PhoneInput id="contact-phone" locale={locale} country={country} onCountryChange={setCountry} value={national} onChange={setNational} invalid={Boolean(errors.phone)} />
               {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
             </div>
 
@@ -259,7 +197,7 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
             {/* Type (shadcn select) + other open input */}
             <div className="space-y-1.5">
               <label htmlFor="contact-type">{t.contact.type}</label>
-              <Select value={type} onValueChange={(v) => setType((v ?? 'general') as FormType)}>
+              <Select dir={locale === 'ar' ? 'rtl' : 'ltr'} value={type} onValueChange={(v) => setType((v ?? 'general') as FormType)}>
                 <SelectTrigger id="contact-type">
                   <SelectValue />
                 </SelectTrigger>
@@ -283,7 +221,7 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
             </div>
 
             {/* Message (optional) */}
-            <div className="space-y-1.5">
+            <div className="contact-message-field space-y-1.5">
               <label htmlFor="contact-message" className="text-sm font-semibold">
                 {t.contact.message}
               </label>
@@ -291,17 +229,17 @@ export function ContactForm({ locale, t }: { locale: 'ar' | 'en'; t: Dictionary 
                 id="contact-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                rows={5}
+                rows={4}
                 className={cn(inputCls(), 'h-auto resize-y py-2.5')}
               />
             </div>
 
-            {serverError && <p className="text-sm text-destructive">{t.contact.error}</p>}
+            {serverError && <p role="alert" className="contact-message-field text-sm text-destructive">{t.contact.error}</p>}
 
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2.5 rounded-lg bg-brand px-8 py-3 text-base font-bold text-brand-foreground transition-colors hover:bg-brand-strong disabled:opacity-60"
+              className="contact-send-button"
             >
               {submitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
               {submitting ? t.contact.submitting : t.contact.submit}

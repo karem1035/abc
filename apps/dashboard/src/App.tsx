@@ -8,6 +8,8 @@ import { ProfilePage } from '@/pages/profile'
 import { AuditLogsPage } from '@/pages/audit-logs'
 import { FaqsPage } from '@/pages/faqs'
 import { ContactSubmissionsPage } from '@/pages/contact-submissions'
+import { DepartmentsPage } from '@/pages/departments'
+import { DoctorsPage } from '@/pages/doctors'
 import { useAuth, type UserRole } from '@/lib/auth'
 import { Loader2 } from 'lucide-react'
 
@@ -69,6 +71,8 @@ export default function App() {
           element={<PlaceholderPage title="Content" />}
         />
         <Route path="faqs" element={<FaqsPage />} />
+        <Route path="departments" element={<DepartmentsPage />} />
+        <Route path="doctors" element={<DoctorsPage />} />
         <Route path="contact-submissions" element={<ContactSubmissionsPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
