@@ -128,6 +128,8 @@ export const doctors = pgTable(
     nameEn: text('name_en').notNull(),
     titleAr: text('title_ar'), // e.g. استشاري أمراض القلب
     titleEn: text('title_en'),
+    contentAr: text('content_ar'), // rich HTML bio from the TipTap editor
+    contentEn: text('content_en'),
     photoUrl: text('photo_url'),
     departmentId: uuid('department_id').references(() => departments.id, {
       onDelete: 'set null',
@@ -174,3 +176,22 @@ export const bookings = pgTable(
 
 export type Booking = typeof bookings.$inferSelect
 export type NewBooking = typeof bookings.$inferInsert
+
+export const doctorSchedules = pgTable(
+  'doctor_schedules',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    doctorId: uuid('doctor_id')
+      .notNull()
+      .references(() => doctors.id, { onDelete: 'cascade' }),
+    weekday: integer('weekday').notNull(), // 0=Sunday … 6=Saturday
+    startTime: text('start_time').notNull(), // HH:MM
+    endTime: text('end_time').notNull(), // HH:MM
+    slotMinutes: integer('slot_minutes').default(30).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('doctor_schedules_doctor_idx').on(table.doctorId)],
+)
+
+export type DoctorSchedule = typeof doctorSchedules.$inferSelect
+export type NewDoctorSchedule = typeof doctorSchedules.$inferInsert

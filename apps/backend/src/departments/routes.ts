@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { asc, desc, eq, and, ne } from 'drizzle-orm'
 import { db } from '../db/client'
-import { departments, doctors } from '../db/schema'
+import { departments, doctorSchedules, doctors } from '../db/schema'
 import { authGuard } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
 
@@ -289,10 +289,79 @@ const adminDoctorSchema = z.object({
   nameEn: z.string().trim().min(2).max(120),
   titleAr: z.string().trim().max(160).optional(),
   titleEn: z.string().trim().max(160).optional(),
+  contentAr: z.string().optional(),
+  contentEn: z.string().optional(),
   photoUrl: z.string().trim().url().optional().or(z.literal('')),
   departmentId: z.string().uuid().nullable().optional(),
   sortOrder: z.coerce.number().int().default(0),
   status: z.enum(['draft', 'published', 'archived']).default('published'),
+})
+
+const scheduleSchema = z.object({
+  schedule: z
+    .array(
+      z.object({
+        weekday: z.coerce.number().int().min(0).max(6),
+        startTime: z.string().regex(/^\d{2}:\d{2}$/),
+        endTime: z.string().regex(/^\d{2}:\d{2}$/),
+        slotMinutes: z.coerce.number().int().min(5).max(240).default(30),
+      }),
+    )
+    .max(30),
+})
+
+const getScheduleRoute = createRoute({
+  method: 'get',
+  path: '/admin/doctors/:id/schedule',
+  tags: ['departments'],
+  summary: 'Get a doctor weekly schedule (admin)',
+  security: [{ Bearer: [] }],
+  request: { params: z.object({ id: z.string().uuid() }) },
+  responses: { 200: { description: 'Schedule rules' } },
+})
+
+departmentsRouter.openapi(getScheduleRoute, async (c) => {
+  const { id } = c.req.valid('param')
+  const rows = await db
+    .select()
+    .from(doctorSchedules)
+    .where(eq(doctorSchedules.doctorId, id))
+    .orderBy(asc(doctorSchedules.weekday), asc(doctorSchedules.startTime))
+  return c.json({ data: rows })
+})
+
+const putScheduleRoute = createRoute({
+  method: 'put',
+  path: '/admin/doctors/:id/schedule',
+  tags: ['departments'],
+  summary: 'Replace a doctor weekly schedule (admin)',
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { 'application/json': { schema: scheduleSchema } } },
+  },
+  responses: { 200: { description: 'Replaced' } },
+})
+
+departmentsRouter.openapi(putScheduleRoute, async (c) => {
+  const { id } = c.req.valid('param')
+  const { schedule } = c.req.valid('json')
+  const user = c.get('user')
+
+  await db.delete(doctorSchedules).where(eq(doctorSchedules.doctorId, id))
+  if (schedule.length > 0) {
+    await db.insert(doctorSchedules).values(schedule.map((rule) => ({ ...rule, doctorId: id })))
+  }
+
+  await recordAudit({
+    actorId: user.id,
+    actorUsername: user.username,
+    action: 'update',
+    entity: 'doctor_schedule',
+    entityId: id,
+    metadata: { rules: schedule.length },
+  })
+  return c.json({ ok: true })
 })
 
 const listDoctorsRoute = createRoute({

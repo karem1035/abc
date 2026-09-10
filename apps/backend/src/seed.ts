@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from './db/client'
-import { departments, doctors, faqs, users } from './db/schema'
+import { departments, doctorSchedules, doctors, faqs, users } from './db/schema'
 import { env, type UserRole } from './env'
 
 type SeedUser = {
@@ -47,6 +47,7 @@ async function main() {
   for (const u of seedUsers) await upsertUser(u)
   await seedFaqData()
   await seedDepartmentsData()
+  await seedScheduleData()
   console.log('seed complete')
   process.exit(0)
 }
@@ -209,5 +210,56 @@ async function seedDepartmentsData() {
       await db.insert(doctors).values(values)
       console.log(`created doctor: ${doc.slug}`)
     }
+  }
+}
+
+// Weekly clinic rules: [doctorSlug, weekday(0=Sun), start, end, slotMinutes]
+const seedSchedules: Array<[string, number, string, string, number]> = [
+  ['ahmed-mohamed', 0, '10:00', '14:00', 30],
+  ['ahmed-mohamed', 2, '10:00', '14:00', 30],
+  ['ahmed-mohamed', 3, '15:00', '18:00', 30],
+  ['mona-hassan', 1, '11:00', '15:00', 30],
+  ['mona-hassan', 4, '11:00', '15:00', 30],
+  ['khaled-ibrahim', 0, '16:00', '20:00', 30],
+  ['khaled-ibrahim', 3, '16:00', '20:00', 30],
+  ['sara-ali', 1, '09:00', '13:00', 30],
+  ['sara-ali', 2, '09:00', '13:00', 30],
+  ['omar-farouk', 6, '10:00', '14:00', 30],
+]
+
+const seedDoctorContent: Record<string, { ar: string; en: string }> = {
+  'ahmed-mohamed': {
+    ar: '<h2>نبذة</h2><p>استشاري أمراض القلب بخبرة تتجاوز 15 عامًا في القسطرة التشخيصية والتداخلية وعلاج أمراض الشريان التاجي.</p><ul><li>بكالوريوس الطب والجراحة — جامعة القاهرة</li><li>ماجستير أمراض القلب — الجامعة نفسها</li><li>عضو الجمعية الأوروبية لأمراض القلب</li></ul>',
+    en: '<h2>About</h2><p>Consultant cardiologist with 15+ years in diagnostic and interventional catheterization and coronary artery disease management.</p><ul><li>MBBCh — Cairo University</li><li>MSc Cardiology</li><li>Member, European Society of Cardiology</li></ul>',
+  },
+}
+
+async function seedScheduleData() {
+  console.log('seeding doctor schedules...')
+  const docs = await db.select().from(doctors)
+  for (const [slug, weekday, startTime, endTime, slotMinutes] of seedSchedules) {
+    const doc = docs.find((d) => d.slug === slug)
+    if (!doc) continue
+    const exists = await db
+      .select({ id: doctorSchedules.id })
+      .from(doctorSchedules)
+      .where(
+        and(
+          eq(doctorSchedules.doctorId, doc.id),
+          eq(doctorSchedules.weekday, weekday),
+          eq(doctorSchedules.startTime, startTime),
+        ),
+      )
+      .limit(1)
+    if (exists.length === 0) {
+      await db.insert(doctorSchedules).values({ doctorId: doc.id, weekday, startTime, endTime, slotMinutes })
+    }
+  }
+
+  console.log('seeding doctor bios...')
+  for (const [slug, content] of Object.entries(seedDoctorContent)) {
+    const doc = docs.find((d) => d.slug === slug)
+    if (!doc || doc.contentAr) continue
+    await db.update(doctors).set({ contentAr: content.ar, contentEn: content.en }).where(eq(doctors.id, doc.id))
   }
 }

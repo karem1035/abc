@@ -36,6 +36,13 @@
       "when": 1789052984167,
       "tag": "0004_curvy_unicorn",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789053631480,
+      "tag": "0005_unique_baron_strucker",
+      "breakpoints": true
     }
   ]
 }

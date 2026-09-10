@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { and, count, desc, eq } from 'drizzle-orm'
 import { db } from '../db/client'
-import { bookings, departments } from '../db/schema'
+import { bookings, departments, doctors } from '../db/schema'
 import { authGuard } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
 import { normalizePhone } from '../lib/phone'
@@ -20,6 +20,9 @@ const requestSchema = z.object({
   patientName: z.string().trim().min(2).max(120),
   phone: z.string().trim().min(5).max(20),
   departmentSlug: z.string().trim().max(80).optional(),
+  doctorSlug: z.string().trim().max(80).optional(),
+  date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), // YYYY-MM-DD from the slot picker
+  time: z.string().trim().regex(/^\d{2}:\d{2}$/).optional(), // HH:MM slot
   preferredDate: z.string().trim().max(40).optional(),
   patientNotes: z.string().trim().max(1000).optional(),
 })
@@ -55,6 +58,17 @@ bookingsRouter.openapi(createRequestRoute, async (c) => {
     departmentId = dept?.id ?? null
   }
 
+  let doctorId: string | null = null
+  if (body.doctorSlug) {
+    const [doc] = await db
+      .select({ id: doctors.id, departmentId: doctors.departmentId })
+      .from(doctors)
+      .where(eq(doctors.slug, body.doctorSlug))
+      .limit(1)
+    doctorId = doc?.id ?? null
+    if (doc?.departmentId && !departmentId) departmentId = doc.departmentId
+  }
+
   const [row] = await db
     .insert(bookings)
     .values({
@@ -62,6 +76,9 @@ bookingsRouter.openapi(createRequestRoute, async (c) => {
       phone,
       source: 'website',
       departmentId,
+      doctorId,
+      appointmentDate: body.date || null,
+      appointmentTime: body.time || null,
       preferredDate: body.preferredDate || null,
       patientNotes: body.patientNotes || null,
       status: 'new',

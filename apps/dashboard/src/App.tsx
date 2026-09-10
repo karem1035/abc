@@ -9,6 +9,7 @@ import { ProfilePage } from '@/pages/profile'
 import { AuditLogsPage } from '@/pages/audit-logs'
 import { FaqsPage } from '@/pages/faqs'
 import { ContactSubmissionsPage } from '@/pages/contact-submissions'
+import { DepartmentEditPage } from '@/pages/department-edit'
 import { DepartmentsPage } from '@/pages/departments'
 import { DoctorsPage } from '@/pages/doctors'
 import { useAuth, type UserRole } from '@/lib/auth'
@@ -70,6 +71,8 @@ export default function App() {
         />
         <Route path="faqs" element={<FaqsPage />} />
         <Route path="departments" element={<DepartmentsPage />} />
+        <Route path="departments/new" element={<DepartmentEditPage />} />
+        <Route path="departments/:id/edit" element={<DepartmentEditPage />} />
         <Route path="doctors" element={<DoctorsPage />} />
         <Route path="contact-submissions" element={<ContactSubmissionsPage />} />
         <Route path="profile" element={<ProfilePage />} />
