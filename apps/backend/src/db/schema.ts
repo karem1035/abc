@@ -253,18 +253,8 @@ export const posts = pgTable('posts', {
   coverUrl: text('cover_url'),
   isFeatured: boolean('is_featured').notNull().default(false),
   status: text('status').notNull().default('draft'),
-  commentsEnabled: boolean('comments_enabled').notNull().default(true),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [index('posts_publication_idx').on(table.status, table.type, table.publishedAt)])
 
-export const postComments = pgTable('post_comments', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  postId: uuid('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  body: text('body').notNull(),
-  locale: text('locale').notNull().default('ar'),
-  status: text('status').notNull().default('pending'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => [index('post_comments_post_status_idx').on(table.postId, table.status)])

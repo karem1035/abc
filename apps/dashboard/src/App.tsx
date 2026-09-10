@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/app-shell'
 import { LoginPage } from '@/pages/login'
 import { DashboardPage } from '@/pages/dashboard'
-import { PostsPage, PostEditPage, PostCommentsPage } from '@/pages/posts'
+import { PostsPage, PostEditPage } from '@/pages/posts'
 import { BookingsPage } from '@/pages/bookings'
 import { UsersPage } from '@/pages/users'
 import { ProfilePage } from '@/pages/profile'
@@ -75,7 +75,6 @@ export default function App() {
           element={<RequireRole roles={['admin', 'marketer']}><PostsPage /></RequireRole>}
         />
         <Route path="content/posts/:id" element={<RequireRole roles={['admin','marketer']}><PostEditPage /></RequireRole>} />
-        <Route path="content/comments" element={<RequireRole roles={['admin','marketer']}><PostCommentsPage /></RequireRole>} />
         <Route path="faqs" element={<FaqsPage />} />
         <Route path="partners" element={<PartnersPage />} />
         <Route path="partners/:id" element={<PartnerEditPage />} />

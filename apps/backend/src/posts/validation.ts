@@ -19,7 +19,7 @@ export const postInput = z.object({
   seoTitleAr: text(180), seoTitleEn: text(180), seoDescriptionAr: text(320), seoDescriptionEn: text(320),
   coverUrl: z.union([z.literal(''), z.string().url().refine((s) => /^https?:\/\//i.test(s))]).default(''),
   isFeatured: z.boolean().default(false),
-  status: z.enum(['draft', 'published', 'archived']), commentsEnabled: z.boolean(),
+  status: z.enum(['draft', 'published', 'archived']),
 }).superRefine((post, ctx) => {
   if (post.status === 'published') {
     for (const field of ['contentAr', 'contentEn'] as const) {
@@ -31,8 +31,4 @@ export const postInput = z.object({
       ctx.addIssue({ code: 'custom', path: ['coverUrl'], message: 'A cover image is required before publishing' })
     }
   }
-})
-export const commentInput = z.object({
-  name: z.string().trim().min(2).max(80), body: z.string().trim().min(3).max(2000), locale: z.enum(['ar', 'en']),
-  website: z.string().max(0).optional(),
 })
