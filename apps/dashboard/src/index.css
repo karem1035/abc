@@ -190,3 +190,22 @@
 [dir='rtl'] .prose-tiptap p.is-editor-empty:first-child::before {
   float: right;
 }
+
+/* Login — split shell with hospital imagery */
+.login-shell { display: grid; grid-template-columns: 1.05fr 1fr; width: 100%; max-w-4xl; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 24px 70px rgb(0 0 0 / 0.14); }
+.login-aside { position: relative; min-height: 560px; }
+.login-aside-img { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; }
+.login-aside-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(20 16 8 / 0.35), rgb(20 16 8 / 0.82)); }
+.login-aside-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 14px; height: 100%; padding: 40px; color: #fff; }
+.login-aside-content h1 { font-family: var(--font-heading); font-size: 30px; font-weight: 700; letter-spacing: 0.02em; }
+.login-aside-content p { max-width: 34ch; font-size: 14.5px; line-height: 1.85; color: rgb(255 255 255 / 0.85); }
+.login-aside-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 4px; border: 1px solid rgb(212 174 110 / 0.55); background: rgb(212 174 110 / 0.16); color: #e8ce9e; border-radius: 999px; padding: 7px 14px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; }
+.login-panel { display: flex; align-items: center; justify-content: center; padding: 48px 40px; background: var(--card); }
+@media (max-width: 880px) {
+  .login-shell { grid-template-columns: 1fr; max-w-md; }
+  .login-aside { min-height: 220px; }
+  .login-aside-content { padding: 24px; }
+  .login-aside-content h1 { font-size: 22px; }
+  .login-aside-content p { display: none; }
+  .login-panel { padding: 32px 24px; }
+}
