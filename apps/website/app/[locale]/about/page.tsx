@@ -21,10 +21,39 @@ const facilities = [
   { icon: Users, ar: 'فريق استشاري بخبرات دولية', en: 'Consultant team with international experience' },
 ]
 
-const timeline = [
-  { year: '2019', ar: 'الافتتاح الرسمي للمستشفى', en: 'Grand opening of the hospital' },
-  { year: '2023', ar: 'الاعتماد الأمريكي من SRC', en: 'American SRC accreditation' },
-  { year: '2025', ar: 'ورش عمل جراحات السمنة وبرامج B-Home و B-Lite', en: 'Bariatric workshops, B-Home and B-Lite programs' },
+const milestones = [
+  {
+    year: '2019',
+    image: '/about/soft-opening.jpg',
+    titleAr: 'الافتتاح التجريبي',
+    titleEn: 'Soft opening!',
+    ar: 'بدأ العمل الكامل بالمستشفى هذا اليوم؛ عيادات الخارجية والعمليات وغرف الإقامة الداخلية بدأت في خدمة مرضانا، ومعنا فريق رائع من الاستشاريين والأطباء والممرضين. ترقبوا الافتتاح الرسمي الكبير هذا الصيف.',
+    en: 'ABC Hospital is fully functional today; our outpatient clinics, operating theater and inpatient rooms started serving our patients, with a great team of consultants, doctors, and nurses. Stay tuned for our grand opening this summer.',
+  },
+  {
+    year: '2019',
+    image: '/about/accredited.jpg',
+    titleAr: 'معتمدون دوليًا',
+    titleEn: 'Internationally accredited!',
+    ar: 'أتم مستشفى ABC زيارة لجنة اعتماد SRC بجولة كاملة داخل المستشفى وتقييم شامل، ووافقت اللجنة على اعتماد مستشفى ABC كمركز تميز في جراحة السمنة، ليصبح أول مستشفى مستقل معتمد دوليًا في جراحات السمنة.',
+    en: 'ABC Hospital completed the SRC accreditation site review with a full tour and rating; the committee approved ABC as a Bariatric Center of Excellence — the first internationally accredited stand-alone bariatric hospital.',
+  },
+  {
+    year: '2019',
+    image: '/about/opening.jpg',
+    titleAr: 'الافتتاح الرسمي!',
+    titleEn: 'Grand opening!',
+    ar: 'أقيم الافتتاح الرسمي الكبير برئاسة الدكتور كلفن هيجا رئيس الاتحاد الدولي لجراحة السمنة (IFSO)، والدكتور هيثم الفوال رئيس فرع الشرق الأوسط وأفريقيا، وبحضور صفوة الجراحين وأعز الأصدقاء، وقد شرف الافتتاح حضور شخصيات مصرية عريقة.',
+    en: 'The grand opening was headed by Dr. Kelvin Higa, head of IFSO, and Dr. Hayssam El Fawal, head of the IFSO MENA chapter, with Egypt\u2019s best surgeons and dearest friends — honored by the presence of Egypt\u2019s most esteemed figures.',
+  },
+  {
+    year: '2022',
+    image: '/about/src-renewal.jpg',
+    titleAr: 'الاعتماد الأمريكي SRC',
+    titleEn: 'The American Accreditation (SRC)',
+    ar: 'حصل المستشفى على الاعتماد الأمريكي من SRC للمرة الثانية على التوالي — أول مستشفى في مصر وأفريقيا يحصل على اعتماد SRC، تقديرًا لالتزامنا بأعلى معايير الجودة والسلامة.',
+    en: 'The hospital obtained the American SRC accreditation for the second time in a row — the first hospital in Egypt and Africa to be accredited by SRC, in recognition of our commitment to the highest quality and safety standards.',
+  },
 ]
 
 export default async function AboutPage({
@@ -55,8 +84,8 @@ export default async function AboutPage({
           <div className="hospital-detail-prose">
             <p>
               {ar
-                ? 'تأسس مستشفى ABC عام ٢٠١٩ كأول مستشفى مستقل متخصص في الجراحات العامة وجراحات السمنة والتجميل في مصر والشرق الأوسط وأفريقيا — نموذج مختلف عن المستشفيات العامة العامة، يركز على التمكن الجراحي ورحلة مريض كاملة من التقييم حتى المتابعة.'
-                : 'ABC Hospital was founded in 2019 as the first stand-alone hospital specialized in general, bariatric and plastic surgery in Egypt, the Middle East and Africa — a different model from general hospitals, focused on surgical excellence and a complete patient journey from assessment to follow-up.'}
+                ? 'بدأت رحلتنا في ٢٠١٩ بافتتاح تجريبي، وتوالت المحطات: اعتماد دولي كمركز تميز في جراحة السمنة، ثم الافتتاح الرسمي برئاسة رئيس الاتحاد الدولي لجراحة السمنة IFSO — لنكون أول مستشفى مستقل متخصص في الجراحات العامة وجراحات السمنة والتجميل في مصر والشرق الأوسط وأفريقيا.'
+                : 'Our journey began in 2019 with a soft opening, followed in quick succession by international accreditation as a Bariatric Center of Excellence and a grand opening headed by the president of IFSO — making us the first stand-alone hospital specialized in general, bariatric and plastic surgery in Egypt, the Middle East and Africa.'}
             </p>
             <p>
               {ar
@@ -82,22 +111,29 @@ export default async function AboutPage({
             <h2>{ar ? 'معتمدون دوليًا من SRC' : 'Internationally accredited by SRC'}</h2>
             <p>
               {ar
-                ? 'حصل المستشفى على الاعتماد الأمريكي من Surgical Review Corporation — اعتراف عالمي بجودة برامج الجراحة وجراحات السمنة وسلامة المرضى.'
-                : 'The hospital holds accreditation from the Surgical Review Corporation — global recognition of our surgical and bariatric programs and patient safety standards.'}
+                ? 'أول مستشفى في مصر وأفريقيا يحصل على اعتماد Surgical Review Corporation الأمريكي كمركز تميز في جراحة السمنة — وحصلنا عليه للمرة الثانية على التوالي في ٢٠٢٢، اعترافًا عالميًا بجودة برامجنا الجراحية ومعايير سلامة المرضى.'
+                : 'The first hospital in Egypt and Africa accredited by the American Surgical Review Corporation as a Bariatric Center of Excellence — renewed for the second consecutive time in 2022, global recognition of our surgical programs and patient-safety standards.'}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="hospital-container about-timeline" data-aos="fade-up">
-        <p className="hospital-eyebrow">{ar ? 'محطاتنا' : 'MILESTONES'}</p>
-        <h2 className="about-timeline-title">{ar ? 'رحلة مستمرة من التميز' : 'A continuing journey'}</h2>
-        <ol className="about-timeline-list">
-          {timeline.map((item) => (
-            <li key={item.year}>
-              <strong dir="ltr">{item.year}</strong>
-              <span>{ar ? item.ar : item.en}</span>
+      {/* Milestones */}
+      <section className="hospital-container about-timeline">
+        <p className="hospital-eyebrow" data-aos="fade-up">{ar ? 'محطاتنا' : 'MILESTONES'}</p>
+        <h2 className="about-timeline-title" data-aos="fade-up">{ar ? 'رحلة مستمرة من التميز' : 'A continuing journey'}</h2>
+        <ol className="about-milestones">
+          {milestones.map((item, i) => (
+            <li key={i} data-aos="fade-up" data-aos-delay={String((i % 2) * 100)}>
+              <div className="about-milestone-image">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.image} alt={ar ? item.titleAr : item.titleEn} loading="lazy" />
+                <span className="about-milestone-year" dir="ltr">{item.year}</span>
+              </div>
+              <div className="about-milestone-copy">
+                <h3>{ar ? item.titleAr : item.titleEn}</h3>
+                <p>{ar ? item.ar : item.en}</p>
+              </div>
             </li>
           ))}
         </ol>

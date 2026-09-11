@@ -645,3 +645,20 @@ main section:nth-of-type(2n):not(section section):not(.home-hero) {
   .about-facilities-grid { grid-template-columns: 1fr; }
   .about-accreditation-inner { flex-direction: column; text-align: center; gap: 18px; padding-block: 34px; }
 }
+
+/* About — milestone cards (real events from the old site) */
+.about-milestones { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 26px; }
+.about-milestones li { display: grid; grid-template-columns: 300px 1fr; gap: 24px; border: 1px solid #e8dece; border-radius: 8px; overflow: hidden; background: white; }
+.about-milestones li:nth-child(even) { grid-template-columns: 1fr 300px; }
+.about-milestones li:nth-child(even) .about-milestone-image { order: 2; }
+.about-milestone-image { position: relative; min-height: 210px; }
+.about-milestone-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.about-milestone-year { position: absolute; top: 12px; inset-inline-start: 12px; background: rgba(138,108,51,.92); color: white; border-radius: 5px; padding: 5px 12px; font-weight: 700; font-size: 14px; letter-spacing: .05em; }
+.about-milestone-copy { padding: 24px 26px; }
+.about-milestone-copy h3 { font-size: 23px; font-weight: 700; }
+.about-milestone-copy p { color: #756953; line-height: 1.9; margin-top: 10px; font-size: 15.5px; }
+@media(max-width:760px) {
+  .about-milestones li, .about-milestones li:nth-child(even) { grid-template-columns: 1fr; }
+  .about-milestones li:nth-child(even) .about-milestone-image { order: 0; }
+  .about-milestone-image { min-height: 200px; aspect-ratio: 1.7; }
+}
