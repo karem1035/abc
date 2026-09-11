@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, Loader2, LockKeyhole } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,44 +34,30 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-svh items-center justify-center bg-background p-4">
-      {/* language / theme controls */}
-      <div className="absolute top-3 end-3 z-10 flex items-center gap-1">
-        <LangSwitch />
-        <ThemeToggle />
-      </div>
-
-      <div className="login-shell">
-        {/* branding side */}
-        <div className="login-aside">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/login-side.jpg" alt="" className="login-aside-img" aria-hidden="true" />
-          <div className="login-aside-overlay" aria-hidden="true" />
-          <div className="login-aside-content">
-            <img src="/abc-logo.webp" alt="ABC" className="h-14 w-14 rounded-xl object-contain" />
-            <h1>{ar ? 'مستشفى ABC' : 'ABC HOSPITAL'}</h1>
-            <p>
-              {ar
-                ? 'أول مستشفى معتمد دوليًا في جراحات السمنة والتميز الجراحي — لوحة تحكم الفريق.'
-                : 'The first internationally accredited bariatric center of excellence — team console.'}
-            </p>
-            <span className="login-aside-badge">
-              <ShieldCheck className="size-3.5" />
-              {ar ? 'معتمد من SRC الأمريكية' : 'SRC ACCREDITED'}
-            </span>
-          </div>
+    <div className="flex min-h-svh flex-col bg-muted/40 font-sans">
+      <header className="flex items-center justify-between gap-4 px-5 py-5 sm:px-8">
+        <div className="flex items-center gap-3">
+          <img src="/abc-logo.webp" alt="ABC" className="size-10 object-contain" />
+          <span className="text-sm font-semibold">{ar ? 'مستشفى ABC' : 'ABC Hospital'}</span>
         </div>
+        <div className="flex items-center gap-1">
+          <LangSwitch />
+          <ThemeToggle />
+        </div>
+      </header>
 
-        {/* form side */}
-        <div className="login-panel">
-          <div className="w-full max-w-sm">
-            <img src="/abc-logo.webp" alt="ABC" className="mx-auto mb-5 h-16 w-16 rounded-xl object-contain lg:hidden" />
-            <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold">
+      <main className="flex flex-1 items-center justify-center px-5 py-10 sm:py-16">
+        <div className="w-full max-w-[420px]">
+          <div className="rounded-2xl border border-border/80 bg-card px-6 py-8 shadow-sm sm:p-10">
+            <div className="mb-6 flex size-11 items-center justify-center rounded-xl bg-primary/15 text-foreground">
+              <LockKeyhole className="size-5" strokeWidth={1.5} aria-hidden="true" />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">
               {t('login.title')}
-            </h2>
-            <p className="mt-1.5 text-sm text-muted-foreground">{t('login.description')}</p>
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{t('login.description')}</p>
 
-            <form onSubmit={onSubmit} className="mt-7 space-y-4">
+            <form onSubmit={onSubmit} className="mt-8 space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="username">{t('login.username')}</Label>
                 <Input
@@ -81,6 +67,9 @@ export function LoginPage() {
                   autoComplete="username"
                   required
                   autoFocus
+                  className="h-11 rounded-lg bg-background"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? 'login-error' : undefined}
                 />
               </div>
               <div className="space-y-2">
@@ -93,12 +82,14 @@ export function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
                     required
-                    className="pe-10"
+                    className="h-11 rounded-lg bg-background pe-12"
+                    aria-invalid={!!error}
+                    aria-describedby={error ? 'login-error' : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute inset-y-0 end-2 my-auto flex size-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                    className="absolute inset-y-0 end-1 my-auto flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -107,23 +98,25 @@ export function LoginPage() {
               </div>
 
               {error && (
-                <p role="alert" className="text-sm text-destructive">{error}</p>
+                <p id="login-error" role="alert" className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{error}</p>
               )}
 
-              <Button type="submit" disabled={submitting} className="h-11 w-full text-sm font-bold">
+              <Button type="submit" disabled={submitting} className="h-11 w-full rounded-lg text-sm font-semibold">
                 {submitting && <Loader2 className="size-4 animate-spin" />}
                 {t('login.submit')}
               </Button>
             </form>
-
-            <p className="mt-8 text-xs text-muted-foreground">
-              {ar
-                ? 'لأعضاء فريق مستشفى ABC فقط — تواصل مع الإدارة للحصول على حساب.'
-                : 'For ABC Hospital staff only — contact administration for an account.'}
-            </p>
           </div>
+          <p className="mx-auto mt-6 max-w-xs text-center text-xs leading-5 text-muted-foreground">
+            {ar
+              ? 'لأعضاء فريق مستشفى ABC فقط — تواصل مع الإدارة للحصول على حساب.'
+              : 'For ABC Hospital staff only — contact administration for an account.'}
+          </p>
         </div>
-      </div>
+      </main>
+      <footer className="px-5 pb-6 text-center text-xs text-muted-foreground">
+        {ar ? 'لوحة تحكم فريق مستشفى ABC' : 'ABC Hospital · Team dashboard'}
+      </footer>
     </div>
   )
 }
