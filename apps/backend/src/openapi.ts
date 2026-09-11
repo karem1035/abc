@@ -1,4 +1,5 @@
 import deployment from './deployment/routes'
+import stats from './stats/routes'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import type { Hono } from 'hono'
 import { swaggerUI } from '@hono/swagger-ui'
@@ -24,6 +25,7 @@ app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
 })
 
 app.route('/deployment', deployment)
+app.route('/stats', stats)
 app.route('/health', health)
 app.route('/auth', auth)
 app.route('/users', users)
