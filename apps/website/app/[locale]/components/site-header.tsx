@@ -30,6 +30,7 @@ export function SiteHeader({ locale, t }: Props) {
     { href: homeHref, label: t.nav.home, exact: true },
     { href: `${homeHref}/departments`, label: t.nav.departments },
     { href: `${homeHref}/doctors`, label: t.nav.doctors },
+    { href: `${homeHref}/about`, label: locale === 'ar' ? 'من نحن' : 'About' },
     { href: `${homeHref}/blog`, label: locale === 'ar' ? 'المدونة' : 'Blog' },
     { href: `${homeHref}/news`, label: t.nav.news },
     { href: `${homeHref}/contact`, label: t.nav.contact },

@@ -608,3 +608,40 @@ main section:nth-of-type(2n):not(section section):not(.home-hero) {
   box-shadow: 0 0 0 100vmax #f7f3eb;
 }
 .home-departments, .home-doctors, .home-faq { padding-block: clamp(36px, 5vw, 64px); }
+
+/* About page */
+.about-story { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 46px; align-items: center; padding-block: 60px; }
+.about-story-copy h2 { font-size: clamp(24px, 3vw, 33px); font-weight: 700; line-height: 1.55; margin-bottom: 18px; }
+.about-story-media img { width: 100%; aspect-ratio: 1.15; object-fit: cover; border-radius: 8px; display: block; }
+.about-accreditation { background: #f6ecdc; border-block: 1px solid #e6d6ba; }
+.about-accreditation-inner { display: flex; align-items: center; gap: 28px; padding-block: 44px; }
+.about-accreditation-icon { color: #8a6c33; flex-shrink: 0; }
+.about-accreditation h2 { font-size: clamp(21px, 2.4vw, 27px); font-weight: 700; }
+.about-accreditation p { color: #776b57; line-height: 1.9; margin-top: 8px; max-width: 68ch; }
+.about-timeline { padding-block: 55px 30px; }
+.about-timeline-title { font-size: clamp(22px, 2.6vw, 28px); font-weight: 700; }
+.about-timeline-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 26px; list-style: none; padding: 0; }
+.about-timeline-list li { border: 1px solid #e8dece; border-radius: 7px; background: white; padding: 22px; }
+.about-timeline-list strong { display: block; font-size: 26px; color: #8a6c33; margin-bottom: 8px; }
+.about-timeline-list span { color: #756953; line-height: 1.8; }
+.about-facilities { padding-block: 35px 55px; }
+.about-facilities-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.about-facility { display: flex; gap: 14px; align-items: flex-start; border: 1px solid #e8dece; border-radius: 7px; background: white; padding: 20px; }
+.about-facility-icon { flex-shrink: 0; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: #f6ecdc; color: #8a6c33; }
+.about-facility p { color: #574b39; font-weight: 600; line-height: 1.7; }
+.about-cta { text-align: center; padding-block: 20px 75px; }
+.about-cta-icon { color: #8a6c33; margin: 0 auto 14px; }
+.about-cta h2 { font-size: clamp(23px, 2.8vw, 30px); font-weight: 700; }
+.about-cta p { color: #756953; margin-top: 10px; }
+.about-cta-actions { display: flex; justify-content: center; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+.about-cta-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #e0d2b4; border-radius: 5px; padding: 13px 22px; font-weight: 700; color: #866830; transition: background .2s; }
+.about-cta-secondary:hover { background: #faf5eb; }
+
+@media(max-width:900px) {
+  .about-story { grid-template-columns: 1fr; gap: 30px; padding-block: 40px; }
+  .about-story-media { order: -1; }
+  .about-story-media img { aspect-ratio: 1.5; }
+  .about-timeline-list { grid-template-columns: 1fr; }
+  .about-facilities-grid { grid-template-columns: 1fr; }
+  .about-accreditation-inner { flex-direction: column; text-align: center; gap: 18px; padding-block: 34px; }
+}

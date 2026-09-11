@@ -1,0 +1,139 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ArrowUpRight, Award, Building2, HeartPulse, Microscope, ShieldCheck, Stethoscope, Syringe, Users } from 'lucide-react'
+import { getDictionary, type Locale } from '@/lib/i18n'
+import { site } from '@/lib/site'
+import { PageHero } from '../components/page-hero'
+
+export async function generateMetadata(props: {
+  params: Promise<{ locale: Locale }>
+}): Promise<Metadata> {
+  const { locale } = await props.params
+  return { title: locale === 'ar' ? 'من نحن' : 'About Us' }
+}
+
+const facilities = [
+  { icon: Microscope, ar: 'معامل وغرف عمليات مجهزة بأحدث الأجهزة', en: 'Labs and operating theaters equipped with the latest systems' },
+  { icon: HeartPulse, ar: 'معمل قسطرة القلب للتدخلات الحرجة', en: 'Cardiac catheterization lab for critical interventions' },
+  { icon: ShieldCheck, ar: 'وحدة عناية مركزة بإشراف ٢٤/٧', en: 'Intensive care unit supervised 24/7' },
+  { icon: Syringe, ar: 'أسطول تمريض منزلي (B-Home) في القاهرة والجيزة', en: 'B-Home nursing fleet across Cairo and Giza' },
+  { icon: Building2, ar: 'موقع مركزي في المهندسين — الجيزة', en: 'Central location in Mohandeseen, Giza' },
+  { icon: Users, ar: 'فريق استشاري بخبرات دولية', en: 'Consultant team with international experience' },
+]
+
+const timeline = [
+  { year: '2019', ar: 'الافتتاح الرسمي للمستشفى', en: 'Grand opening of the hospital' },
+  { year: '2023', ar: 'الاعتماد الأمريكي من SRC', en: 'American SRC accreditation' },
+  { year: '2025', ar: 'ورش عمل جراحات السمنة وبرامج B-Home و B-Lite', en: 'Bariatric workshops, B-Home and B-Lite programs' },
+]
+
+export default async function AboutPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>
+}) {
+  const { locale } = await params
+  const t = await getDictionary(locale)
+  const ar = locale === 'ar'
+
+  return (
+    <>
+      <PageHero
+        title={ar ? 'من نحن' : 'About ABC Hospital'}
+        description={
+          ar
+            ? 'أول مستشفى مستقل معتمد دوليًا في الجراحات العامة وجراحات السمنة والتجميل في مصر والشرق الأوسط وأفريقيا.'
+            : 'The first stand-alone internationally accredited hospital specialized in general, bariatric and plastic surgery in Egypt, the Middle East and Africa.'
+        }
+      />
+
+      {/* Story + image */}
+      <section className="hospital-container about-story">
+        <div className="about-story-copy" data-aos="fade-up">
+          <p className="hospital-eyebrow">{ar ? 'قصتنا' : 'OUR STORY'}</p>
+          <h2>{ar ? 'بدأنا بفكرة واحدة: الجراحة بمعايير عالمية في مصر' : 'We started with one idea: world-class surgery in Egypt'}</h2>
+          <div className="hospital-detail-prose">
+            <p>
+              {ar
+                ? 'تأسس مستشفى ABC عام ٢٠١٩ كأول مستشفى مستقل متخصص في الجراحات العامة وجراحات السمنة والتجميل في مصر والشرق الأوسط وأفريقيا — نموذج مختلف عن المستشفيات العامة العامة، يركز على التمكن الجراحي ورحلة مريض كاملة من التقييم حتى المتابعة.'
+                : 'ABC Hospital was founded in 2019 as the first stand-alone hospital specialized in general, bariatric and plastic surgery in Egypt, the Middle East and Africa — a different model from general hospitals, focused on surgical excellence and a complete patient journey from assessment to follow-up.'}
+            </p>
+            <p>
+              {ar
+                ? 'اليوم نخدم آلاف المرضى سنويًا عبر أقسام جراحية متخصصة ومعامل حديثة، ويمتد أثرنا خارج أسوار المستشفى عبر برنامج B-Home للرعاية المنزلية وبرنامج B-Lite للتغذية الصحية.'
+                : 'Today we serve thousands of patients a year through specialized surgical departments and modern labs, and our reach extends beyond the hospital walls through the B-Home home-care program and the B-Lite nutrition system.'}
+            </p>
+          </div>
+        </div>
+        <div className="about-story-media" data-aos="fade-up" data-aos-delay="120">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1000&q=80&auto=format&fit=crop"
+            alt={ar ? 'مستشفى ABC' : 'ABC Hospital'}
+          />
+        </div>
+      </section>
+
+      {/* Accreditation highlight */}
+      <section className="about-accreditation" data-aos="fade-up">
+        <div className="hospital-container about-accreditation-inner">
+          <Award className="about-accreditation-icon" size={44} strokeWidth={1.5} />
+          <div>
+            <h2>{ar ? 'معتمدون دوليًا من SRC' : 'Internationally accredited by SRC'}</h2>
+            <p>
+              {ar
+                ? 'حصل المستشفى على الاعتماد الأمريكي من Surgical Review Corporation — اعتراف عالمي بجودة برامج الجراحة وجراحات السمنة وسلامة المرضى.'
+                : 'The hospital holds accreditation from the Surgical Review Corporation — global recognition of our surgical and bariatric programs and patient safety standards.'}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Timeline */}
+      <section className="hospital-container about-timeline" data-aos="fade-up">
+        <p className="hospital-eyebrow">{ar ? 'محطاتنا' : 'MILESTONES'}</p>
+        <h2 className="about-timeline-title">{ar ? 'رحلة مستمرة من التميز' : 'A continuing journey'}</h2>
+        <ol className="about-timeline-list">
+          {timeline.map((item) => (
+            <li key={item.year}>
+              <strong dir="ltr">{item.year}</strong>
+              <span>{ar ? item.ar : item.en}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Facilities */}
+      <section className="hospital-container about-facilities">
+        <div className="hospital-section-title" data-aos="fade-up">
+          <div>
+            <p className="hospital-eyebrow">{ar ? 'مرافقنا' : 'OUR FACILITIES'}</p>
+            <h2>{ar ? 'بنية تحتية بمعايير عالمية' : 'Infrastructure to international standards'}</h2>
+          </div>
+        </div>
+        <div className="about-facilities-grid">
+          {facilities.map((f, i) => (
+            <div key={i} className="about-facility" data-aos="fade-up" data-aos-delay={String((i % 3) * 80)}>
+              <span className="about-facility-icon"><f.icon size={22} strokeWidth={1.6} /></span>
+              <p>{ar ? f.ar : f.en}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="hospital-container about-cta" data-aos="fade-up">
+        <Stethoscope size={34} className="about-cta-icon" />
+        <h2>{ar ? 'جاهزون لرعايتك' : 'Ready to care for you'}</h2>
+        <p>{ar ? 'اطلب موعدك وسيتواصل معك فريقنا لتأكيد الزيارة.' : 'Request an appointment and our team will call you to confirm your visit.'}</p>
+        <div className="about-cta-actions">
+          <a href={`tel:${site.hotline}`} dir="ltr" className="home-about-cta">{site.hotline}</a>
+          <Link href={`/${locale}/doctors`} className="about-cta-secondary">
+            {ar ? 'تعرف على أطبائنا' : 'Meet our doctors'}
+            <ArrowUpRight size={17} className="rtl:-scale-x-100" />
+          </Link>
+        </div>
+      </section>
+    </>
+  )
+}
