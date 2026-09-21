@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Mail, MessageSquare, Phone } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { formatDateTime } from '@/lib/format'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -38,7 +39,7 @@ type SubmissionsResponse = {
 const STATUSES = ['new', 'read', 'archived'] as const
 
 export function ContactSubmissionsPage() {
-  const { t, dir } = useI18n()
+  const { t } = useI18n()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
@@ -119,7 +120,7 @@ export function ContactSubmissionsPage() {
                       onValueChange={(status) => statusMutation.mutate({ id: s.id, status: status ?? 'new' })}
                     >
                       <SelectTrigger className="h-8 w-28">
-                        <SelectValue />
+                        <SelectValue>{statusLabel[s.status]}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {STATUSES.map((st) => (
@@ -129,7 +130,7 @@ export function ContactSubmissionsPage() {
                     </Select>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground" dir="ltr">
-                    {new Date(s.createdAt).toLocaleString(dir === 'rtl' ? 'ar-EG' : 'en-GB')}
+                    {formatDateTime(s.createdAt)}
                   </TableCell>
                 </TableRow>
               ))

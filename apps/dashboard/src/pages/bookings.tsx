@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Loader2, Phone, Plus } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { formatDateTime } from '@/lib/format'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -19,6 +20,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { PhoneInput } from '@/components/shared/phone-input'
+import { WhatsAppIcon } from '@/components/shared/whatsapp-icon'
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@/components/shared/table-pagination'
 
 type Booking = {
@@ -65,7 +67,7 @@ const emptyManual: ManualForm = {
 }
 
 export function BookingsPage() {
-  const { t, tLabel, dir } = useI18n()
+  const { t, tLabel } = useI18n()
   const queryClient = useQueryClient()
 
   const [page, setPage] = useState(1)
@@ -181,7 +183,11 @@ export function BookingsPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? 'all'); setPage(1) }}>
-          <SelectTrigger className="h-9 w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-9 w-40">
+            <SelectValue>
+              {statusFilter === 'all' ? t('bookings.allStatuses') : tLabel(`bookings.status.${statusFilter}`)}
+            </SelectValue>
+          </SelectTrigger>
           <SelectContent>
             {STATUSES.map((s) => (
               <SelectItem key={s} value={String(s)}>{tLabel(`bookings.status.${s}`)}</SelectItem>
@@ -190,7 +196,11 @@ export function BookingsPage() {
           </SelectContent>
         </Select>
         <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v ?? 'all'); setPage(1) }}>
-          <SelectTrigger className="h-9 w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-9 w-40">
+            <SelectValue>
+              {sourceFilter === 'all' ? t('bookings.allSources') : tLabel(`bookings.source.${sourceFilter}`)}
+            </SelectValue>
+          </SelectTrigger>
           <SelectContent>
             {(['website', 'walk_in', 'phone'] as const).map((s) => (
               <SelectItem key={s} value={s}>{tLabel(`bookings.source.${s}`)}</SelectItem>
@@ -232,7 +242,27 @@ export function BookingsPage() {
               rows.map((b) => (
                 <TableRow key={b.id} className="cursor-pointer" onClick={() => openDetail(b)}>
                   <TableCell className="font-medium">{b.patientName}</TableCell>
-                  <TableCell dir="ltr">{b.phone}</TableCell>
+                  <TableCell className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5">
+                      <span dir="ltr">{b.phone}</span>
+                      <a
+                        href={`https://wa.me/${b.phone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="WhatsApp"
+                        className="text-muted-foreground transition-colors hover:text-green-600"
+                      >
+                        <WhatsAppIcon className="h-4 w-4" />
+                      </a>
+                      <a
+                        href={`tel:${b.phone}`}
+                        aria-label="Call"
+                        className="text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <Phone className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </TableCell>
                   <TableCell dir="rtl">{b.departmentNameAr ?? '—'}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Select
@@ -240,7 +270,7 @@ export function BookingsPage() {
                       onValueChange={(status) => statusMutation.mutate({ id: b.id, status: status ?? 'new' })}
                     >
                       <SelectTrigger className="h-8 w-32">
-                        <SelectValue />
+                        <SelectValue>{tLabel(`bookings.status.${b.status}`)}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {STATUSES.map((s) => (
@@ -254,7 +284,7 @@ export function BookingsPage() {
                   </TableCell>
                   <TableCell>{tLabel(`bookings.source.${b.source}`)}</TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground" dir="ltr">
-                    {new Date(b.createdAt).toLocaleDateString(dir === 'rtl' ? 'ar-EG' : 'en-GB')}
+                    {formatDateTime(b.createdAt)}
                   </TableCell>
                 </TableRow>
               ))
@@ -342,7 +372,7 @@ export function BookingsPage() {
               <div className="space-y-2">
                 <Label>{t('bookings.source.label')}</Label>
                 <Select value={manual.source} onValueChange={(v) => setManual((m) => ({ ...m, source: (v ?? 'walk_in') as 'walk_in' | 'phone' }))}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue>{tLabel(`bookings.source.${manual.source}`)}</SelectValue></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="walk_in">{tLabel('bookings.source.walk_in')}</SelectItem>
                     <SelectItem value="phone">{tLabel('bookings.source.phone')}</SelectItem>
@@ -352,7 +382,9 @@ export function BookingsPage() {
               <div className="space-y-2">
                 <Label>{t('departments.title')}</Label>
                 <Select value={manual.departmentId || 'none'} onValueChange={(v) => setManual((m) => ({ ...m, departmentId: v === 'none' ? '' : (v ?? '') }))}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full">
+                    <SelectValue dir="rtl">{manual.departmentId ? (departments.find((d) => d.id === manual.departmentId)?.nameAr ?? '—') : '—'}</SelectValue>
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">—</SelectItem>
                     {departments.map((d) => (
