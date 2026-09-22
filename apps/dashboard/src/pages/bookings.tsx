@@ -3,7 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Loader2, Phone, Plus } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
-import { formatDateTime } from '@/lib/format'
+import { formatDateTime, formatDate, formatTime } from '@/lib/format'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -32,6 +32,9 @@ type Booking = {
   departmentSlug: string | null
   departmentNameAr: string | null
   departmentNameEn: string | null
+  doctorId: string | null
+  doctorNameAr: string | null
+  doctorNameEn: string | null
   preferredDate: string | null
   patientNotes: string | null
   status: 'new' | 'contacted' | 'confirmed' | 'declined' | 'cancelled' | 'completed'
@@ -217,6 +220,7 @@ export function BookingsPage() {
               <TableHead>{t('submissions.name')}</TableHead>
               <TableHead>{t('submissions.phone')}</TableHead>
               <TableHead>{t('departments.title')}</TableHead>
+              <TableHead>{t('doctors.title')}</TableHead>
               <TableHead>{t('submissions.status')}</TableHead>
               <TableHead>{t('bookings.appointment')}</TableHead>
               <TableHead>{t('bookings.source.label')}</TableHead>
@@ -227,14 +231,14 @@ export function BookingsPage() {
             {listQuery.isLoading ? (
               [...Array(3)].map((_, i) => (
                 <TableRow key={i}>
-                  {[...Array(7)].map((_, j) => (
+                  {[...Array(8)].map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
                   {t('bookings.none')}
                 </TableCell>
               </TableRow>
@@ -264,6 +268,7 @@ export function BookingsPage() {
                     </div>
                   </TableCell>
                   <TableCell dir="rtl">{b.departmentNameAr ?? '—'}</TableCell>
+                  <TableCell dir="rtl">{b.doctorNameAr ?? '—'}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Select
                       value={b.status}
@@ -280,7 +285,9 @@ export function BookingsPage() {
                     </Select>
                   </TableCell>
                   <TableCell dir="ltr" className="whitespace-nowrap text-muted-foreground">
-                    {b.appointmentDate ? `${b.appointmentDate} ${b.appointmentTime ?? ''}` : '—'}
+                    {b.appointmentDate
+                      ? `${formatDate(b.appointmentDate)}${b.appointmentTime ? ` ${formatTime(b.appointmentTime)}` : ''}`
+                      : '—'}
                   </TableCell>
                   <TableCell>{tLabel(`bookings.source.${b.source}`)}</TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground" dir="ltr">
@@ -314,6 +321,9 @@ export function BookingsPage() {
                   <Phone className="h-4 w-4" /> {detail.phone}
                 </a>
                 {statusBadge(detail.status)}
+                {detail.doctorNameAr && (
+                  <span dir="rtl">{detail.doctorNameAr}</span>
+                )}
                 {detail.preferredDate && (
                   <span>{t('bookings.preferred')}: {detail.preferredDate}</span>
                 )}

@@ -140,20 +140,30 @@ bookingsRouter.openapi(listRoute, async (c) => {
     .where(filters.length ? and(...filters) : undefined)
 
   const rows = await db
-    .select({ booking: bookings, deptNameAr: departments.nameAr, deptNameEn: departments.nameEn, deptSlug: departments.slug })
+    .select({
+      booking: bookings,
+      deptNameAr: departments.nameAr,
+      deptNameEn: departments.nameEn,
+      deptSlug: departments.slug,
+      doctorNameAr: doctors.nameAr,
+      doctorNameEn: doctors.nameEn,
+    })
     .from(bookings)
     .leftJoin(departments, eq(bookings.departmentId, departments.id))
+    .leftJoin(doctors, eq(bookings.doctorId, doctors.id))
     .where(filters.length ? and(...filters) : undefined)
     .orderBy(desc(bookings.createdAt))
     .limit(limit)
     .offset((page - 1) * limit)
 
   return c.json({
-    data: rows.map(({ booking, deptNameAr, deptNameEn, deptSlug }) => ({
+    data: rows.map(({ booking, deptNameAr, deptNameEn, deptSlug, doctorNameAr, doctorNameEn }) => ({
       ...booking,
       departmentSlug: deptSlug,
       departmentNameAr: deptNameAr,
       departmentNameEn: deptNameEn,
+      doctorNameAr,
+      doctorNameEn,
     })),
     page,
     limit,
