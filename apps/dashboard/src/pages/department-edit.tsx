@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { slugify } from '@/lib/slugify'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -77,6 +79,7 @@ function DepartmentEditor({ editing }: { editing: Department | null }) {
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<'ar' | 'en'>('ar')
   const [error, setError] = useState<string | null>(null)
+  const [slugLocked, setSlugLocked] = useState(!!editing?.slug) // auto-fill slug from name until the user types one
   const [form, setForm] = useState<DeptForm>(() => editing ? {
     slug: editing.slug, nameAr: editing.nameAr, nameEn: editing.nameEn,
     descriptionAr: editing.descriptionAr ?? '', descriptionEn: editing.descriptionEn ?? '',
@@ -111,9 +114,10 @@ function DepartmentEditor({ editing }: { editing: Department | null }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['departments'] })
+      toast.success(t('toast.saved'))
       navigate('/departments')
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => { setError(e.message); toast.error(e.message) },
   })
 
 
@@ -137,7 +141,7 @@ function DepartmentEditor({ editing }: { editing: Department | null }) {
                   pattern="[a-z0-9-]+"
                   placeholder="cardiology"
                   value={form.slug}
-                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                  onChange={(e) => { setSlugLocked(e.target.value !== ''); setForm((f) => ({ ...f, slug: e.target.value })) }}
                 />
                 <p className="text-xs text-muted-foreground">{t('postCategories.slugAuto')}</p>
               </div>
@@ -165,11 +169,11 @@ function DepartmentEditor({ editing }: { editing: Department | null }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>{t('departments.nameAr')}</Label>
-                <Input dir="rtl" required value={form.nameAr} onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value }))} />
+                <Input dir="rtl" required value={form.nameAr} onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value, ...(!slugLocked ? { slug: slugify(f.nameEn || e.target.value) } : {}) }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('departments.nameEn')}</Label>
-                <Input dir="ltr" required value={form.nameEn} onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value }))} />
+                <Input dir="ltr" required value={form.nameEn} onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value, ...(!slugLocked ? { slug: slugify(e.target.value || f.nameAr) } : {}) }))} />
               </div>
             </div>
 

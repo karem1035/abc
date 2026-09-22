@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { toast } from 'sonner'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -51,7 +52,9 @@ export function DepartmentsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['departments'] })
       setDeleting(null)
+      toast.success(t('toast.deleted'))
     },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   function openCreate() { navigate('/departments/new') }

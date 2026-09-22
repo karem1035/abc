@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Mail, MessageSquare, Phone } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { toast } from 'sonner'
 import { formatDateTime } from '@/lib/format'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -58,7 +59,8 @@ export function ContactSubmissionsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['contact-submissions'] }),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ['contact-submissions'] }); toast.success(t('toast.saved')) },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   const statusLabel: Record<string, string> = {

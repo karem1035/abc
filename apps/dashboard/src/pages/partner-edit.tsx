@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Eye, Loader2, Pencil } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -92,11 +93,12 @@ export function PartnerEditPage() {
           })
     },
     onSuccess: (saved) => {
+      toast.success(t('toast.saved'))
       void queryClient.invalidateQueries({ queryKey: ['partners'] })
       if (isNew) navigate(`/partners/${saved.id}`, { replace: true })
       else setLoadedId(undefined)
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => { setError(e.message); toast.error(e.message) },
   })
 
   function onSubmit(e: FormEvent) {

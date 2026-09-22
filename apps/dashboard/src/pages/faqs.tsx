@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Ellipsis, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { toast } from 'sonner'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -103,8 +104,9 @@ export function FaqsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['faqs'] })
       setDialogOpen(false)
+      toast.success(t('toast.saved'))
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => { setError(e.message); toast.error(e.message) },
   })
 
   const deleteMutation = useMutation({
@@ -112,7 +114,9 @@ export function FaqsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['faqs'] })
       setDeleting(null)
+      toast.success(t('toast.deleted'))
     },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   function openCreate() {

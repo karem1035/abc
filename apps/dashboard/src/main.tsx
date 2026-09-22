@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { ThemeProvider } from './lib/theme'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { DirectionProvider } from '@/components/ui/direction'
+import { AppToaster } from '@/components/shared/app-toaster'
 import { ErrorBoundary } from '@/components/shared/error-boundary'
 import { I18nProvider, useI18n } from './lib/i18n'
 import './index.css'
@@ -34,11 +35,12 @@ createRoot(document.getElementById('root')!).render(
         <ThemeProvider>
           <I18nProvider>
             <Direction>
-              <BrowserRouter>
-                <TooltipProvider>
-                  <App />
-                </TooltipProvider>
-              </BrowserRouter>
+                  <BrowserRouter>
+                    <TooltipProvider>
+                      <App />
+                      <AppToaster />
+                    </TooltipProvider>
+                  </BrowserRouter>
             </Direction>
           </I18nProvider>
         </ThemeProvider>

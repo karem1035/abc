@@ -3,6 +3,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Ellipsis, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { slugify } from '@/lib/slugify'
+import { toast } from 'sonner'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -41,6 +43,7 @@ export function PostCategoriesPage() {
   const [editing, setEditing] = useState<Category | null>(null)
   const [deleting, setDeleting] = useState<Category | null>(null)
   const [form, setForm] = useState<CategoryForm>(emptyForm)
+  const [slugLocked, setSlugLocked] = useState(false) // auto-fill slug from name until the user types one
   const [error, setError] = useState<string | null>(null)
 
   const listQuery = useQuery({
@@ -73,8 +76,9 @@ export function PostCategoriesPage() {
       void queryClient.invalidateQueries({ queryKey: ['post-categories'] })
       void queryClient.invalidateQueries({ queryKey: ['posts'] })
       setDialogOpen(false)
+      toast.success(t('toast.saved'))
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => { setError(e.message); toast.error(e.message) },
   })
 
   const deleteMutation = useMutation({
@@ -83,12 +87,15 @@ export function PostCategoriesPage() {
       void queryClient.invalidateQueries({ queryKey: ['post-categories'] })
       void queryClient.invalidateQueries({ queryKey: ['posts'] })
       setDeleting(null)
+      toast.success(t('toast.deleted'))
     },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   function openCreate() {
     setEditing(null)
     setForm(emptyForm)
+    setSlugLocked(false)
     setError(null)
     setDialogOpen(true)
   }
@@ -96,6 +103,7 @@ export function PostCategoriesPage() {
   function openEdit(cat: Category) {
     setEditing(cat)
     setForm({ nameAr: cat.nameAr, nameEn: cat.nameEn, slug: cat.slug, sortOrder: String(cat.sortOrder) })
+    setSlugLocked(true)
     setError(null)
     setDialogOpen(true)
   }
@@ -185,12 +193,12 @@ export function PostCategoriesPage() {
             <div className="space-y-2">
               <Label>{t('postCategories.nameAr')}</Label>
               <Input dir="rtl" required maxLength={100} value={form.nameAr}
-                onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value }))} />
+                onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value, ...(!slugLocked ? { slug: slugify(f.nameEn || e.target.value) } : {}) }))} />
             </div>
             <div className="space-y-2">
               <Label>{t('postCategories.nameEn')}</Label>
               <Input dir="ltr" required maxLength={100} value={form.nameEn}
-                onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value }))} />
+                onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value, ...(!slugLocked ? { slug: slugify(e.target.value || f.nameAr) } : {}) }))} />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">

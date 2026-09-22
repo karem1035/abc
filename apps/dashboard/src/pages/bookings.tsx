@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { Loader2, Phone, Plus } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { toast } from 'sonner'
 import { formatDateTime, formatDate, formatTime } from '@/lib/format'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -111,7 +112,8 @@ export function BookingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       }),
-    onSuccess: invalidate,
+    onSuccess: () => { invalidate(); toast.success(t('toast.saved')) },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   const detailMutation = useMutation({
@@ -130,7 +132,9 @@ export function BookingsPage() {
     onSuccess: () => {
       invalidate()
       setDetail(null)
+      toast.success(t('toast.saved'))
     },
+    onError: (e: Error) => toast.error(e.message),
   })
 
   const manualMutation = useMutation({
@@ -153,8 +157,9 @@ export function BookingsPage() {
       setManualOpen(false)
       setManual(emptyManual)
       setError(null)
+      toast.success(t('toast.saved'))
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => { setError(e.message); toast.error(e.message) },
   })
 
   function openDetail(b: Booking) {

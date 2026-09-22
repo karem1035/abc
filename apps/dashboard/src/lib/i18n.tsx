@@ -253,6 +253,9 @@ const dict = {
     'phone.label': 'الهاتف',
     'phone.searchCountry': 'ابحث عن دولة…',
     'phone.noCountry': 'لا توجد نتائج',
+    'toast.saved': 'تم الحفظ',
+    'toast.deleted': 'تم الحذف',
+    'toast.error': 'حدث خطأ غير متوقع',
   },
   en: {
     'app.name': 'ABC Dashboard',
@@ -504,6 +507,9 @@ const dict = {
     'phone.label': 'Phone',
     'phone.searchCountry': 'Search country…',
     'phone.noCountry': 'No results',
+    'toast.saved': 'Saved',
+    'toast.deleted': 'Deleted',
+    'toast.error': 'Something went wrong',
   },
 } as const
 

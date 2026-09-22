@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { useI18n } from '@/lib/i18n'
+import { toast } from 'sonner'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -50,6 +51,7 @@ export function DoctorsPage() {
       void queryClient.invalidateQueries({ queryKey: ['doctors'] })
       void queryClient.invalidateQueries({ queryKey: ['departments'] })
       setDeleting(null)
+      toast.success(t('toast.deleted'))
     },
   })
 
