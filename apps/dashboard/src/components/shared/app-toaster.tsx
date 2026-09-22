@@ -1,4 +1,5 @@
 import { Toaster } from 'sonner'
+import 'sonner/dist/styles.css'
 import { useI18n } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 
@@ -6,5 +7,15 @@ import { useTheme } from '@/lib/theme'
 export function AppToaster() {
   const { dir } = useI18n()
   const { resolved } = useTheme()
-  return <Toaster position="bottom-center" dir={dir} theme={resolved} richColors closeButton />
+  return (
+    <Toaster
+      position="top-center"
+      dir={dir}
+      theme={resolved}
+      richColors
+      closeButton
+      duration={4000}
+      visibleToasts={4}
+    />
+  )
 }

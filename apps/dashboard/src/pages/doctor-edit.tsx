@@ -87,7 +87,6 @@ export function DoctorEditPage() {
   const queryClient = useQueryClient()
 
   const [form, setForm] = useState<DoctorForm>(emptyForm)
-  const [slugLocked, setSlugLocked] = useState(!isNew) // auto-fill slug from name until the user types one
   const [tab, setTab] = useState<'ar' | 'en'>('ar')
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
   const [error, setError] = useState<string | null>(null)
@@ -250,7 +249,7 @@ export function DoctorEditPage() {
               <div className="space-y-2">
                 <Label>Slug <span className="text-muted-foreground">(URL)</span></Label>
                 <Input dir="ltr" pattern="[a-z0-9-]+" placeholder="ahmed-mohamed"
-                  value={form.slug} onChange={(e) => { setSlugLocked(e.target.value !== ''); setForm((f) => ({ ...f, slug: e.target.value })) }} />
+                  value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} />
                 <p className="text-xs text-muted-foreground">{t('postCategories.slugAuto')}</p>
               </div>
               <div className="space-y-2">
@@ -277,12 +276,12 @@ export function DoctorEditPage() {
               <div className="space-y-2">
                 <Label>{t('doctors.nameAr')}</Label>
                 <Input dir="rtl" required value={form.nameAr}
-                  onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value, ...(!slugLocked ? { slug: slugify(f.nameEn || e.target.value) } : {}) }))} />
+                  onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value, slug: slugify(f.nameEn || e.target.value) }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('doctors.nameEn')}</Label>
                 <Input dir="ltr" required value={form.nameEn}
-                  onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value, ...(!slugLocked ? { slug: slugify(e.target.value || f.nameAr) } : {}) }))} />
+                  onChange={(e) => setForm((f) => ({ ...f, nameEn: e.target.value, slug: slugify(e.target.value || f.nameAr) }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('doctors.titleAr')}</Label>

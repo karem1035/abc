@@ -37,7 +37,6 @@ export function PageEditPage() {
   const [form, setForm] = useState({
     slug: '', titleAr: '', titleEn: '', contentAr: '', contentEn: '', isPublished: true,
   })
-  const [slugLocked, setSlugLocked] = useState(!isNew) // auto-fill slug from title until the user types one
   const [loadedId, setLoadedId] = useState<string | null | undefined>(null)
 
   const pagesQuery = useQuery({
@@ -138,16 +137,16 @@ export function PageEditPage() {
               <div className="space-y-2">
                 <Label>Slug <span className="text-muted-foreground">(URL)</span></Label>
                 <Input dir="ltr" pattern="[a-z0-9-]+" placeholder="privacy"
-                  value={form.slug} onChange={(e) => { setSlugLocked(e.target.value !== ''); setForm((f) => ({ ...f, slug: e.target.value })) }} />
+                  value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} />
                 <p className="text-xs text-muted-foreground">{t('postCategories.slugAuto')}</p>
               </div>
               <div className="space-y-2">
                 <Label>{t('pages.titleAr')}</Label>
-                <Input dir="rtl" required value={form.titleAr} onChange={(e) => setForm((f) => ({ ...f, titleAr: e.target.value, ...(!slugLocked ? { slug: slugify(f.titleEn || e.target.value) } : {}) }))} />
+                <Input dir="rtl" required value={form.titleAr} onChange={(e) => setForm((f) => ({ ...f, titleAr: e.target.value, slug: slugify(f.titleEn || e.target.value) }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('pages.titleEn')}</Label>
-                <Input dir="ltr" required value={form.titleEn} onChange={(e) => setForm((f) => ({ ...f, titleEn: e.target.value, ...(!slugLocked ? { slug: slugify(e.target.value || f.titleAr) } : {}) }))} />
+                <Input dir="ltr" required value={form.titleEn} onChange={(e) => setForm((f) => ({ ...f, titleEn: e.target.value, slug: slugify(e.target.value || f.titleAr) }))} />
               </div>
             </div>
 
