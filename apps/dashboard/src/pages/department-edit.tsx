@@ -133,12 +133,13 @@ function DepartmentEditor({ editing }: { editing: Department | null }) {
               <div className="space-y-2">
                 <Label>Slug <span className="text-muted-foreground">(URL)</span></Label>
                 <Input
-                  dir="ltr" required
+                  dir="ltr"
                   pattern="[a-z0-9-]+"
                   placeholder="cardiology"
                   value={form.slug}
                   onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                 />
+                <p className="text-xs text-muted-foreground">{t('postCategories.slugAuto')}</p>
               </div>
               <div className="space-y-2">
                 <Label>{t('faqs.sortOrder')}</Label>

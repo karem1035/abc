@@ -4,6 +4,7 @@ import { db } from '../db/client'
 import { insurancePartners, pages } from '../db/schema'
 import { authGuard } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
+import { slugSchema, slugify, uniqueSlug } from '../lib/slug'
 
 type AuthEnv = {
   Variables: { user: { id: string; username: string; role: 'admin' | 'call_center' | 'marketer' } }
@@ -212,7 +213,7 @@ contentRouter.openapi(deletePartnerRoute, async (c) => {
 })
 
 const pageSchema = z.object({
-  slug: z.string().trim().min(1).max(80).regex(/^[a-z0-9-]+$/),
+  slug: slugSchema,
   titleAr: z.string().trim().min(2).max(160),
   titleEn: z.string().trim().min(2).max(160),
   contentAr: z.string().optional(),
@@ -247,9 +248,13 @@ const createPageRoute = createRoute({
 contentRouter.openapi(createPageRoute, async (c) => {
   const body = c.req.valid('json')
   const user = c.get('user')
-  const existing = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, body.slug)).limit(1)
+  const slug = body.slug?.trim() ? body.slug : await uniqueSlug(
+    slugify(body.titleEn || body.titleAr),
+    async (candidate) => (await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, candidate)).limit(1)).length > 0,
+  )
+  const existing = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, slug)).limit(1)
   if (existing.length > 0) return c.json({ error: 'Slug already exists' }, 409)
-  const [row] = await db.insert(pages).values(body).returning()
+  const [row] = await db.insert(pages).values({ ...body, slug }).returning()
   await recordAudit({ actorId: user.id, actorUsername: user.username, action: 'create', entity: 'page', entityId: row.id, metadata: { slug: row.slug } })
   return c.json(row, 201)
 })
@@ -271,6 +276,7 @@ contentRouter.openapi(updatePageRoute, async (c) => {
   const { id } = c.req.valid('param')
   const body = c.req.valid('json')
   const user = c.get('user')
+  if (body.slug === '') delete body.slug // empty slug = keep current
   if (body.slug) {
     const clash = await db.select({ id: pages.id }).from(pages).where(and(eq(pages.slug, body.slug), ne(pages.id, id))).limit(1)
     if (clash.length > 0) return c.json({ error: 'Slug already exists' }, 409)

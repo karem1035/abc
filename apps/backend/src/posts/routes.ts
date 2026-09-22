@@ -4,6 +4,7 @@ import { db } from '../db/client'
 import { postCategories, posts } from '../db/schema'
 import { authGuard, requireRoles } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
+import { slugify, uniqueSlug } from '../lib/slug'
 import { postInput } from './validation'
 
 type Env = { Variables: { user: { id: string; username: string; role: 'admin' | 'call_center' | 'marketer' } } }
@@ -42,22 +43,6 @@ router.openapi(createRoute({ method:'get', path:'/featured', tags:['posts'], sum
 // Admin routes precede /:slug and protect reads as well as writes.
 router.use('/admin/*', authGuard, requireRoles(['admin', 'marketer']))
 
-/** kebab-case slug from a title; falls back to `post` when nothing ASCII survives (e.g. Arabic-only titles) */
-function slugifyTitle(title: string): string {
-  return title.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 100).replace(/-+$/g, '') || 'post'
-}
-
-/** ensure uniqueness, excluding the post currently being edited */
-async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
-  let candidate = base
-  for (let i = 2; ; i++) {
-    const [clash] = await db.select({ id: posts.id }).from(posts)
-      .where(excludeId ? and(eq(posts.slug, candidate), ne(posts.id, excludeId)) : eq(posts.slug, candidate)).limit(1)
-    if (!clash) return candidate
-    const suffix = `-${i}`
-    candidate = `${base.slice(0, 100 - suffix.length)}${suffix}`
-  }
-}
 router.openapi(createRoute({ method:'get', path:'/admin/', tags:['posts'], security:[{Bearer:[]}], request:{query:pageQuery.extend({q:z.string().max(100).optional()})}, responses:{200:{description:'Editorial list'}} }), async c => {
   const {page,limit,q}=c.req.valid('query')
   const where=q ? or(ilike(posts.titleAr, `%${q}%`),ilike(posts.titleEn, `%${q}%`)) : undefined
@@ -81,7 +66,10 @@ for (const method of ['post','put'] as const) {
     // slug: explicit wins; otherwise keep the existing one, else generate from the English (fallback Arabic) title
     const slug = body.slug?.trim()
       ? body.slug
-      : (existing?.slug ?? await uniqueSlug(slugifyTitle(body.titleEn || body.titleAr), existing?.id))
+      : (existing?.slug ?? await uniqueSlug(
+          slugify(body.titleEn || body.titleAr),
+          async (candidate) => (await db.select({ id: posts.id }).from(posts).where(and(eq(posts.slug, candidate), existing?.id ? ne(posts.id, existing.id) : undefined)).limit(1)).length > 0,
+        ))
     // keep the legacy text columns in sync with the linked category
     const [cat] = body.categoryId ? await db.select().from(postCategories).where(eq(postCategories.id, body.categoryId)).limit(1) : []
     if (body.categoryId !== undefined && !cat) return c.json({ error: 'Category not found' }, 400)

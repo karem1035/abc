@@ -4,6 +4,7 @@ import { db } from '../db/client'
 import { postCategories } from '../db/schema'
 import { authGuard, requireRoles } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
+import { slugSchema, slugify, uniqueSlug } from '../lib/slug'
 
 type Env = { Variables: { user: { id: string; username: string; role: 'admin' | 'call_center' | 'marketer' } } }
 const router = new OpenAPIHono<Env>()
@@ -13,23 +14,10 @@ const idParam = z.object({ id: z.string().uuid() })
 const categoryInput = z.object({
   nameAr: z.string().trim().min(1).max(100),
   nameEn: z.string().trim().min(1).max(100),
-  slug: z.string().trim().max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional().or(z.literal('')),
+  slug: slugSchema,
   sortOrder: z.coerce.number().int().min(0).max(999).default(0),
 })
 
-function slugify(name: string): string {
-  return name.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 100).replace(/-+$/g, '') || 'category'
-}
-
-async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
-  let candidate = base
-  for (let i = 2; ; i++) {
-    const [clash] = await db.select({ id: postCategories.id }).from(postCategories).where(eq(postCategories.slug, candidate)).limit(1)
-    if (!clash || clash.id === excludeId) return candidate
-    const suffix = `-${i}`
-    candidate = `${base.slice(0, 100 - suffix.length)}${suffix}`
-  }
-}
 
 /* ---------------------------------- public --------------------------------- */
 
@@ -72,7 +60,10 @@ router.openapi(createRoute({
     .where(eq(postCategories.nameAr, body.nameAr)).limit(1)
   if (dupe) return c.json({ error: 'Arabic name already exists' }, 409)
 
-  const slug = body.slug?.trim() ? body.slug : await uniqueSlug(slugify(body.nameEn))
+  const slug = body.slug?.trim() ? body.slug : await uniqueSlug(
+    slugify(body.nameEn),
+    async (candidate) => (await db.select({ id: postCategories.id }).from(postCategories).where(eq(postCategories.slug, candidate)).limit(1)).length > 0,
+  )
   try {
     const [row] = await db.insert(postCategories).values({ ...body, slug }).returning()
     await recordAudit({ actorId: user.id, actorUsername: user.username, action: 'create', entity: 'post_category', entityId: row.id, metadata: { slug } })

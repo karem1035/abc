@@ -4,6 +4,7 @@ import { db } from '../db/client'
 import { departments, doctorSchedules, doctors } from '../db/schema'
 import { authGuard } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
+import { slugSchema, slugify, uniqueSlug } from '../lib/slug'
 
 type AuthEnv = {
   Variables: { user: { id: string; username: string; role: 'admin' | 'call_center' | 'marketer' } }
@@ -119,12 +120,7 @@ departmentsRouter.openapi(getPublicRoute, async (c) => {
 departmentsRouter.use('/admin/*', authGuard)
 
 const adminDepartmentSchema = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(1)
-    .max(80)
-    .regex(/^[a-z0-9-]+$/, 'lowercase letters, numbers and dashes only'),
+  slug: slugSchema,
   nameAr: z.string().trim().min(2).max(120),
   nameEn: z.string().trim().min(2).max(120),
   descriptionAr: z.string().trim().max(400).optional(),
@@ -176,16 +172,21 @@ departmentsRouter.openapi(createRouteDef, async (c) => {
   const body = c.req.valid('json')
   const user = c.get('user')
 
+  const departments_slug = body.slug?.trim() ? body.slug : await uniqueSlug(
+    slugify(body.nameEn || body.nameAr),
+    async (candidate) => (await db.select({ id: departments.id }).from(departments).where(eq(departments.slug, candidate)).limit(1)).length > 0,
+  )
+
   const existing = await db
     .select({ id: departments.id })
     .from(departments)
-    .where(eq(departments.slug, body.slug))
+    .where(eq(departments.slug, departments_slug))
     .limit(1)
   if (existing.length > 0) return c.json({ error: 'Slug already exists' }, 409)
 
   const [row] = await db
     .insert(departments)
-    .values({ ...body, imageUrl: body.imageUrl || null })
+    .values({ ...body, slug: departments_slug, imageUrl: body.imageUrl || null })
     .returning()
 
   await recordAudit({
@@ -217,6 +218,7 @@ departmentsRouter.openapi(updateRouteDef, async (c) => {
   const body = c.req.valid('json')
   const user = c.get('user')
 
+  if (body.slug === '') delete body.slug // empty slug = keep current
   if (body.slug) {
     const clash = await db
       .select({ id: departments.id })
@@ -279,12 +281,7 @@ departmentsRouter.openapi(deleteRouteDef, async (c) => {
 /* --------------------------- admin: doctors (minimal) -------------------------- */
 
 const adminDoctorSchema = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(1)
-    .max(80)
-    .regex(/^[a-z0-9-]+$/, 'lowercase letters, numbers and dashes only'),
+  slug: slugSchema,
   nameAr: z.string().trim().min(2).max(120),
   nameEn: z.string().trim().min(2).max(120),
   titleAr: z.string().trim().max(160).optional(),
@@ -409,16 +406,21 @@ departmentsRouter.openapi(createDoctorRoute, async (c) => {
   const body = c.req.valid('json')
   const user = c.get('user')
 
+  const doctors_slug = body.slug?.trim() ? body.slug : await uniqueSlug(
+    slugify(body.nameEn || body.nameAr),
+    async (candidate) => (await db.select({ id: doctors.id }).from(doctors).where(eq(doctors.slug, candidate)).limit(1)).length > 0,
+  )
+
   const existing = await db
     .select({ id: doctors.id })
     .from(doctors)
-    .where(eq(doctors.slug, body.slug))
+    .where(eq(doctors.slug, doctors_slug))
     .limit(1)
   if (existing.length > 0) return c.json({ error: 'Slug already exists' }, 409)
 
   const [row] = await db
     .insert(doctors)
-    .values({ ...body, photoUrl: body.photoUrl || null, departmentId: body.departmentId ?? null })
+    .values({ ...body, slug: doctors_slug, photoUrl: body.photoUrl || null, departmentId: body.departmentId ?? null })
     .returning()
 
   await recordAudit({
@@ -450,6 +452,7 @@ departmentsRouter.openapi(updateDoctorRoute, async (c) => {
   const body = c.req.valid('json')
   const user = c.get('user')
 
+  if (body.slug === '') delete body.slug // empty slug = keep current
   if (body.slug) {
     const clash = await db
       .select({ id: doctors.id })

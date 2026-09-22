@@ -245,8 +245,9 @@ export function DoctorEditPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label>Slug <span className="text-muted-foreground">(URL)</span></Label>
-                <Input dir="ltr" required pattern="[a-z0-9-]+" placeholder="ahmed-mohamed"
+                <Input dir="ltr" pattern="[a-z0-9-]+" placeholder="ahmed-mohamed"
                   value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} />
+                <p className="text-xs text-muted-foreground">{t('postCategories.slugAuto')}</p>
               </div>
               <div className="space-y-2">
                 <Label>{t('faqs.sortOrder')}</Label>
