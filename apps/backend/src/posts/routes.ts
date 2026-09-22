@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { and, desc, eq, ilike, or, sql, type SQL } from 'drizzle-orm'
+import { and, desc, eq, ilike, ne, or, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db/client'
 import { posts } from '../db/schema'
 import { authGuard, requireRoles } from '../auth/middleware'
@@ -40,6 +40,23 @@ router.openapi(createRoute({ method:'get', path:'/featured', tags:['posts'], sum
 
 // Admin routes precede /:slug and protect reads as well as writes.
 router.use('/admin/*', authGuard, requireRoles(['admin', 'marketer']))
+
+/** kebab-case slug from a title; falls back to `post` when nothing ASCII survives (e.g. Arabic-only titles) */
+function slugifyTitle(title: string): string {
+  return title.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 100).replace(/-+$/g, '') || 'post'
+}
+
+/** ensure uniqueness, excluding the post currently being edited */
+async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
+  let candidate = base
+  for (let i = 2; ; i++) {
+    const [clash] = await db.select({ id: posts.id }).from(posts)
+      .where(excludeId ? and(eq(posts.slug, candidate), ne(posts.id, excludeId)) : eq(posts.slug, candidate)).limit(1)
+    if (!clash) return candidate
+    const suffix = `-${i}`
+    candidate = `${base.slice(0, 100 - suffix.length)}${suffix}`
+  }
+}
 router.openapi(createRoute({ method:'get', path:'/admin/', tags:['posts'], security:[{Bearer:[]}], request:{query:pageQuery.extend({q:z.string().max(100).optional()})}, responses:{200:{description:'Editorial list'}} }), async c => {
   const {page,limit,q}=c.req.valid('query')
   const where=q ? or(ilike(posts.titleAr, `%${q}%`),ilike(posts.titleEn, `%${q}%`)) : undefined
@@ -60,7 +77,11 @@ for (const method of ['post','put'] as const) {
       const [featuredCount]=await db.select({count:sql<number>`count(*)::int`}).from(posts).where(eq(posts.isFeatured,true))
       if(featuredCount.count>=4)return c.json({error:'Featured limit reached (4). Unfeature another post first.'},409)
     }
-    const values={...body,coverUrl:body.coverUrl||null,publishedAt:body.status==='published'?(existing?.publishedAt??new Date()):(existing?.publishedAt??null),updatedAt:new Date()}
+    // slug: explicit wins; otherwise keep the existing one, else generate from the English (fallback Arabic) title
+    const slug = body.slug?.trim()
+      ? body.slug
+      : (existing?.slug ?? await uniqueSlug(slugifyTitle(body.titleEn || body.titleAr), existing?.id))
+    const values={...body,slug,coverUrl:body.coverUrl||null,publishedAt:body.status==='published'?(existing?.publishedAt??new Date()):(existing?.publishedAt??null),updatedAt:new Date()}
     try {
       const [row]=id ? await db.update(posts).set(values).where(eq(posts.id,id)).returning() : await db.insert(posts).values(values).returning()
       const user=c.get('user'); await recordAudit({actorId:user.id,actorUsername:user.username,action:id?'update':'create',entity:'post',entityId:row.id,metadata:{slug:row.slug,status:row.status}})

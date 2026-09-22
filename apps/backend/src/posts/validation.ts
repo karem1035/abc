@@ -9,7 +9,7 @@ export const cleanPostHtml = (html: string) => sanitizeHtml(html, {
 })
 const text = (max: number) => z.string().trim().max(max).default('')
 export const postInput = z.object({
-  slug: z.string().trim().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  slug: z.string().trim().max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional().or(z.literal('')),
   type: z.enum(['article', 'news']),
   titleAr: z.string().trim().min(2).max(180), titleEn: z.string().trim().min(2).max(180),
   excerptAr: text(500), excerptEn: text(500),
