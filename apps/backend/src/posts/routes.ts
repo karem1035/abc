@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { and, desc, eq, ilike, ne, or, sql, type SQL } from 'drizzle-orm'
+import { and, desc, eq, ilike, inArray, ne, or, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db/client'
 import { postCategories, posts } from '../db/schema'
 import { authGuard, requireRoles } from '../auth/middleware'
@@ -26,7 +26,7 @@ router.openapi(createRoute({ method: 'get', path: '/', tags: ['posts'], summary:
   const { locale, page, limit, type, q, category } = c.req.valid('query')
   const clauses: SQL[] = [eq(posts.status, 'published')]
   if (type) clauses.push(eq(posts.type, type))
-  if (category) clauses.push(eq(catLocale(locale), category))
+  if (category) clauses.push(inArray(posts.categoryId, db.select({ id: postCategories.id }).from(postCategories).where(or(eq(postCategories.nameAr, category), eq(postCategories.nameEn, category))))!)
   if (q) clauses.push(or(ilike(locale === 'ar' ? posts.titleAr : posts.titleEn, `%${q}%`), ilike(locale === 'ar' ? posts.excerptAr : posts.excerptEn, `%${q}%`))!)
   const where = and(...clauses)
   const [rows, [total]] = await Promise.all([db.select({ post: posts, catName: catLocale(locale) }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(where).orderBy(desc(posts.publishedAt), desc(posts.id)).limit(limit).offset((page-1)*limit), db.select({ count: sql<number>`count(*)::int` }).from(posts).where(where)])
