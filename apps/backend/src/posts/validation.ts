@@ -15,7 +15,7 @@ export const postInput = z.object({
   excerptAr: text(500), excerptEn: text(500),
   contentAr: z.string().max(200000).default('').transform(cleanPostHtml),
   contentEn: z.string().max(200000).default('').transform(cleanPostHtml),
-  categoryAr: text(100), categoryEn: text(100), authorAr: text(120), authorEn: text(120),
+  categoryId: z.string().uuid().nullable().optional(), authorAr: text(120), authorEn: text(120),
   seoTitleAr: text(180), seoTitleEn: text(180), seoDescriptionAr: text(320), seoDescriptionEn: text(320),
   coverUrl: z.union([z.literal(''), z.string().url().refine((s) => /^https?:\/\//i.test(s))]).default(''),
   isFeatured: z.boolean().default(false),

@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { and, desc, eq, ilike, ne, or, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db/client'
-import { posts } from '../db/schema'
+import { postCategories, posts } from '../db/schema'
 import { authGuard, requireRoles } from '../auth/middleware'
 import { recordAudit } from '../lib/audit'
 import { postInput } from './validation'
@@ -9,13 +9,14 @@ import { postInput } from './validation'
 type Env = { Variables: { user: { id: string; username: string; role: 'admin' | 'call_center' | 'marketer' } } }
 const router = new OpenAPIHono<Env>()
 const localeQuery = z.object({ locale: z.enum(['ar', 'en']).default('ar') })
+const catLocale = (locale: 'ar' | 'en') => (locale === 'ar' ? postCategories.nameAr : postCategories.nameEn)
 const slugParam = z.object({ slug: z.string().max(100) })
 const idParam = z.object({ id: z.string().uuid() })
 const pageQuery = z.object({ page: z.coerce.number().int().min(1).max(10000).default(1), limit: z.coerce.number().int().min(1).max(50).default(12) })
-function localize(p: typeof posts.$inferSelect, locale: 'ar' | 'en', detail = false) {
+function localize(p: typeof posts.$inferSelect, locale: 'ar' | 'en', detail = false, catName?: string | null) {
   const ar = locale === 'ar'
   return { id: p.id, slug: p.slug, type: p.type, title: ar ? p.titleAr : p.titleEn, excerpt: ar ? p.excerptAr : p.excerptEn,
-    category: ar ? p.categoryAr : p.categoryEn, author: ar ? p.authorAr : p.authorEn,
+    category: catName || (ar ? p.categoryAr : p.categoryEn), categoryAr: p.categoryAr, categoryEn: p.categoryEn, author: ar ? p.authorAr : p.authorEn,
     coverUrl: p.coverUrl, isFeatured: p.isFeatured, publishedAt: p.publishedAt, updatedAt: p.updatedAt,
     ...(detail ? { content: ar ? p.contentAr : p.contentEn, seoTitle: ar ? p.seoTitleAr : p.seoTitleEn,
       seoDescription: ar ? p.seoDescriptionAr : p.seoDescriptionEn } : {}) }
@@ -24,18 +25,18 @@ router.openapi(createRoute({ method: 'get', path: '/', tags: ['posts'], summary:
   const { locale, page, limit, type, q, category } = c.req.valid('query')
   const clauses: SQL[] = [eq(posts.status, 'published')]
   if (type) clauses.push(eq(posts.type, type))
-  if (category) clauses.push(eq(locale === 'ar' ? posts.categoryAr : posts.categoryEn, category))
+  if (category) clauses.push(eq(catLocale(locale), category))
   if (q) clauses.push(or(ilike(locale === 'ar' ? posts.titleAr : posts.titleEn, `%${q}%`), ilike(locale === 'ar' ? posts.excerptAr : posts.excerptEn, `%${q}%`))!)
   const where = and(...clauses)
-  const [rows, [total]] = await Promise.all([db.select().from(posts).where(where).orderBy(desc(posts.publishedAt), desc(posts.id)).limit(limit).offset((page-1)*limit), db.select({ count: sql<number>`count(*)::int` }).from(posts).where(where)])
-  return c.json({ data: rows.map((p) => localize(p, locale)), total: total.count, page, limit })
+  const [rows, [total]] = await Promise.all([db.select({ post: posts, catName: catLocale(locale) }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(where).orderBy(desc(posts.publishedAt), desc(posts.id)).limit(limit).offset((page-1)*limit), db.select({ count: sql<number>`count(*)::int` }).from(posts).where(where)])
+  return c.json({ data: rows.map(({ post: p, catName }) => localize(p, locale, false, catName)), total: total.count, page, limit })
 })
 
 // Admin routes precede /:slug and protect reads as well as writes.
 router.openapi(createRoute({ method:'get', path:'/featured', tags:['posts'], summary:'Featured posts (up to 4, public)', request:{query:localeQuery}, responses:{200:{description:'Featured posts'}} }), async c => {
   const {locale}=c.req.valid('query')
-  const rows=await db.select().from(posts).where(and(eq(posts.status,'published'),eq(posts.isFeatured,true))).orderBy(desc(posts.publishedAt)).limit(4)
-  return c.json({data:rows.map(p=>localize(p,locale))})
+  const rows=await db.select({ post: posts, catName: catLocale(locale) }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(and(eq(posts.status,'published'),eq(posts.isFeatured,true))).orderBy(desc(posts.publishedAt)).limit(4)
+  return c.json({data:rows.map(({post:p,catName})=>localize(p,locale,false,catName))})
 })
 
 // Admin routes precede /:slug and protect reads as well as writes.
@@ -60,8 +61,8 @@ async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
 router.openapi(createRoute({ method:'get', path:'/admin/', tags:['posts'], security:[{Bearer:[]}], request:{query:pageQuery.extend({q:z.string().max(100).optional()})}, responses:{200:{description:'Editorial list'}} }), async c => {
   const {page,limit,q}=c.req.valid('query')
   const where=q ? or(ilike(posts.titleAr, `%${q}%`),ilike(posts.titleEn, `%${q}%`)) : undefined
-  const [data,[count]]=await Promise.all([db.select().from(posts).where(where).orderBy(desc(posts.updatedAt)).limit(limit).offset((page-1)*limit),db.select({count:sql<number>`count(*)::int`}).from(posts).where(where)])
-  return c.json({data,total:count.count,page,limit})
+  const [data,[count]]=await Promise.all([db.select({post:posts,catNameAr:postCategories.nameAr,catNameEn:postCategories.nameEn}).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(where).orderBy(desc(posts.updatedAt)).limit(limit).offset((page-1)*limit),db.select({count:sql<number>`count(*)::int`}).from(posts).where(where)])
+  return c.json({data:data.map(({post,catNameAr,catNameEn})=>({...post,categoryNameAr:catNameAr,categoryNameEn:catNameEn})),total:count.count,page,limit})
 })
 router.openapi(createRoute({method:'get',path:'/admin/:id',tags:['posts'],security:[{Bearer:[]}],request:{params:idParam},responses:{200:{description:'Editor record'},404:{description:'Missing'}}}),async c=>{
   const [post]=await db.select().from(posts).where(eq(posts.id,c.req.valid('param').id)).limit(1)
@@ -81,7 +82,11 @@ for (const method of ['post','put'] as const) {
     const slug = body.slug?.trim()
       ? body.slug
       : (existing?.slug ?? await uniqueSlug(slugifyTitle(body.titleEn || body.titleAr), existing?.id))
-    const values={...body,slug,coverUrl:body.coverUrl||null,publishedAt:body.status==='published'?(existing?.publishedAt??new Date()):(existing?.publishedAt??null),updatedAt:new Date()}
+    // keep the legacy text columns in sync with the linked category
+    const [cat] = body.categoryId ? await db.select().from(postCategories).where(eq(postCategories.id, body.categoryId)).limit(1) : []
+    if (body.categoryId !== undefined && !cat) return c.json({ error: 'Category not found' }, 400)
+    const categorySync = body.categoryId === undefined ? {} : { categoryAr: cat?.nameAr ?? '', categoryEn: cat?.nameEn ?? '' }
+    const values={...body,...categorySync,slug,coverUrl:body.coverUrl||null,publishedAt:body.status==='published'?(existing?.publishedAt??new Date()):(existing?.publishedAt??null),updatedAt:new Date()}
     try {
       const [row]=id ? await db.update(posts).set(values).where(eq(posts.id,id)).returning() : await db.insert(posts).values(values).returning()
       const user=c.get('user'); await recordAudit({actorId:user.id,actorUsername:user.username,action:id?'update':'create',entity:'post',entityId:row.id,metadata:{slug:row.slug,status:row.status}})
@@ -100,7 +105,9 @@ router.openapi(createRoute({method:'delete',path:'/admin/:id',tags:['posts'],sec
   return c.json({ok:true})
 })
 router.openapi(createRoute({method:'get',path:'/:slug',tags:['posts'],request:{params:slugParam,query:localeQuery},responses:{200:{description:'Published detail'},404:{description:'Missing'}}}),async c=>{
-  const [post]=await db.select().from(posts).where(and(eq(posts.slug,c.req.valid('param').slug),eq(posts.status,'published'))).limit(1)
-  return post?c.json({data:localize(post,c.req.valid('query').locale,true)}):c.json({error:'Not found'},404)
+  const locale=c.req.valid('query').locale
+  const [row]=await db.select({ post: posts, catName: catLocale(locale) }).from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).where(and(eq(posts.slug,c.req.valid('param').slug),eq(posts.status,'published'))).limit(1)
+  const post=row?.post
+  return post?c.json({data:localize(post,locale,true,row?.catName)}):c.json({error:'Not found'},404)
 })
 export default router

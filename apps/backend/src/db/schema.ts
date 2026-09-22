@@ -232,6 +232,19 @@ export const pages = pgTable('pages', {
 export type Page = typeof pages.$inferSelect
 export type NewPage = typeof pages.$inferInsert
 
+export const postCategories = pgTable('post_categories', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: text('slug').notNull().unique(),
+  nameAr: text('name_ar').notNull(),
+  nameEn: text('name_en').notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export type PostCategory = typeof postCategories.$inferSelect
+export type NewPostCategory = typeof postCategories.$inferInsert
+
 export const posts = pgTable('posts', {
   id: uuid('id').defaultRandom().primaryKey(),
   slug: text('slug').notNull().unique(),
@@ -242,8 +255,9 @@ export const posts = pgTable('posts', {
   excerptEn: text('excerpt_en').notNull().default(''),
   contentAr: text('content_ar').notNull().default(''),
   contentEn: text('content_en').notNull().default(''),
-  categoryAr: text('category_ar').notNull().default(''),
-  categoryEn: text('category_en').notNull().default(''),
+  categoryAr: text('category_ar').notNull().default(''), // legacy text, superseded by categoryId
+  categoryEn: text('category_en').notNull().default(''), // legacy text, superseded by categoryId
+  categoryId: uuid('category_id').references(() => postCategories.id, { onDelete: 'set null' }),
   authorAr: text('author_ar').notNull().default(''),
   authorEn: text('author_en').notNull().default(''),
   seoTitleAr: text('seo_title_ar').notNull().default(''),
